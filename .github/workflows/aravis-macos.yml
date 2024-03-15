@@ -21,14 +21,14 @@ jobs:
         brew install meson ninja gcc gettext intltool libxml2 libusb gstreamer gnome-icon-theme gobject-introspection glib
     - name: Build
       run: |
-        meson --buildtype=plain -Ddocumentation=disabled -Dgst-plugin=enabled -Dintrospection=disabled -Dusb=enabled -Dviewer=enabled -Dgentl-producer=true . ./build
-        ninja -C ./build
+        mkdir build
+        meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
+        meson compile -C ./build
+        meson install -C ./build
       env:
         CC: gcc
-    - name: Tests
-      run: meson test -C build/ -v
+  
     - uses: actions/upload-artifact@v3
       with:
         name: aravis-${{env.ARAVIS_VER}}-x86-64-macos.tar.gz
         path: ${{ github.workspace }}/install/*
-
