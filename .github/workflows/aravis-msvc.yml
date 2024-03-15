@@ -1,85 +1,35 @@
-name: Aravis-MSVC
+name: Release
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+  push
+
+
+env:
+  ARAVIS_VER: ${{github.ref_name}}
 
 jobs:
-  msvc:
-    runs-on: windows-2019
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        - version: 16
-          arch: x86_64
-          build_type_conan: Release
-          build_type_meson: release
+  release-linux:
+    runs-on: ubuntu-latest
     steps:
-    - name: pip
+    - uses: actions/checkout@v3
+    - name: Install dependencies
       run: |
-        pip install "conan<2.0.0"
-    - name: disable-perl
+        pip3 install meson ninja Markdown toml typogrify
+        sudo apt update
+        sudo apt install python3 libusb-1.0-0-dev gobject-introspection valgrind libgstreamer-plugins-bad1.0-dev libgtk-3-dev libgirepository1.0-dev python3-gi libunwind-dev gettext
+    - name: Build
       run: |
-        rm -r C:\Strawberry\perl
-    - name: checkout
-      uses: actions/checkout@v3
-    - name: conan
+        mkdir build
+        meson setup -Ddocumentation=disabled -Dusb=enabled -Dviewer=enabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install -Dintrospection=enabled build . 
+        meson compile -C ./build
+        meson install -C ./build
       env:
-        INPUT_CONANFILE: |
-          [requires]
-          libiconv/1.17
-          #gobject-introspection/1.69.0
-          gstreamer/1.22.3
-          #gst-plugins-base/1.22.3      Disable gstreamer for now, latest gst-plugins-base is 1.19.2
-          #gtk/4.4.0
-          libxml2/2.10.3
-          zlib/1.2.13
-          libusb/1.0.26
-
-          [build_requires]
-          meson/0.59.2
-          pkgconf/1.9.3
-
-          [generators]
-          pkg_config
-          virtualenv
-          virtualbuildenv
-          virtualrunenv
-
-          [options]
-          glib:shared=True
-          gstreamer:shared=True
-          gst-plugins-base:shared=True
-      run: |
-        $Env:INPUT_CONANFILE | Out-File -FilePath ${{ github.workspace }}\conanfile.txt -Encoding utf8
-        conan install -s os="Windows" -s compiler="Visual Studio" -s compiler.version=${{ matrix.version }} -s arch=${{ matrix.arch }} -s build_type=${{ matrix.build_type_conan }} -b pcre -b missing -b cascade -if build .
-    - name: meson
-      run: |
-        .\build\activate.ps1
-        .\build\activate_build.ps1
-        .\build\activate_run.ps1
-        echo "::group::configure"
-        meson --prefix ${{ github.workspace }}\install --buildtype ${{ matrix.build_type_meson }} --pkg-config-path ${{ github.workspace }}\build -Ddocumentation=disabled -Dgst-plugin=disabled -Dintrospection=disabled -Dusb=enabled -Dviewer=disabled -Dgv-n-buffers=1 -Dgentl-producer=true . .\build
-        echo "::endgroup::"
-        echo "::group::compile"
-        meson compile -C .\build -v
-        echo "::endgroup::"
-        echo "::group::install"
-        meson install -C .\build
-        echo "::endgroup::"
-    - name: test
-      run: |
-        .\build\activate.ps1
-        .\build\activate_build.ps1
-        .\build\activate_run.ps1
-        meson test -C .\build
-    - name: logs
-      uses: actions/upload-artifact@v3
-      if: failure()
+        CC: gcc
+    - name: Tests
+      run: meson test -C build/ -v
+    - name: Valgrind
+      run: meson test -C build/ -v --setup=valgrind
+    - uses: actions/upload-artifact@v3
       with:
-        name: msvc_${{ matrix.version }}_${{ matrix.arch }}_${{ matrix.build_type_meson }}_Meson_Testlog
-        path: build/meson-logs/testlog.txt
+        name: aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
+        path: ${{ github.workspace }}/install/*
