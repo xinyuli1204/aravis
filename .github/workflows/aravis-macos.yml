@@ -28,7 +28,7 @@ jobs:
       env:
         CC: gcc
     - name: Tests
-      run:
+      run: |
         export LD_LIBRARY_PATH=${{ github.workspace }}/install/lib/:$LD_LIBRARY_PATH
         export DYLD_LIBRARY_PATH=${{ github.workspace }}/install/lib/:$DYLD_LIBRARY_PATH
         meson test -C build/ -v
