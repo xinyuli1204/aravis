@@ -27,7 +27,10 @@ jobs:
         meson install -C ./build
       env:
         CC: gcc
-  
+    - name: Tests
+      run:
+        export LD_LIBRARY_PATH=${{ github.workspace }}/install/lib/:$LD_LIBRARY_PATH
+        meson test -C build/ -v
     - uses: actions/upload-artifact@v3
       with:
         name: aravis-${{env.ARAVIS_VER}}-x86-64-macos.tar.gz
