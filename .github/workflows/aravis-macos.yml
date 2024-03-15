@@ -1,24 +1,20 @@
-name: Aravis-macOS
+name: Release
 
 on: push
 
+env:
+  ARAVIS_VER: ${{github.ref_name}}
+
 jobs:
-  macos:
-    runs-on: macos-latest
+  release-linux:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-    - name: Unbreak Python in Github Actions
-      run: |
-        find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
-        sudo rm -rf /Library/Frameworks/Python.framework/
-        brew install --force python3 && brew unlink python3 && brew unlink python3 && brew link --overwrite python3
     - name: Install dependencies
       run: |
-        brew update
-        brew install meson ninja gcc gettext intltool libxml2 libusb gstreamer gnome-icon-theme gobject-introspection glib
+        pip3 install meson ninja Markdown toml typogrify
+        sudo apt update
+        sudo apt install python3 libusb-1.0-0-dev gobject-introspection valgrind libgstreamer-plugins-bad1.0-dev libgtk-3-dev libgirepository1.0-dev python3-gi libunwind-dev gettext
     - name: Build
       run: |
         mkdir build
@@ -28,10 +24,43 @@ jobs:
       env:
         CC: gcc
     - name: Tests
-      run: |
-        export DYLD_LIBRARY_PATH=${{ github.workspace }}/install/lib/:$DYLD_LIBRARY_PATH
-        meson test -C build/ -v
+      run: meson test -C build/ -v
+    - name: Valgrind
+      run: meson test -C build/ -v --setup=valgrind
     - uses: actions/upload-artifact@v3
       with:
-        name: aravis-${{env.ARAVIS_VER}}-x86-64-macos.tar.gz
+        name: aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
         path: ${{ github.workspace }}/install/*
+        
+  release-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Unbreak Python in Github Actions
+        run: |
+          find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
+          sudo rm -rf /Library/Frameworks/Python.framework/
+          brew install --force python3 && brew unlink python3 && brew unlink python3 && brew link --overwrite python3
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install meson ninja gcc gettext intltool libxml2 libusb gstreamer gnome-icon-theme gobject-introspection glib
+      - name: Build
+        run: |
+          mkdir build
+          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
+          meson compile -C ./build
+          meson install -C ./build
+        env:
+          CC: gcc
+      - name: Tests
+        run: |
+          export DYLD_LIBRARY_PATH=${{ github.workspace }}/install/lib/:$DYLD_LIBRARY_PATH
+          meson test -C build/ -v
+      - uses: actions/upload-artifact@v3
+        with:
+          name: aravis-${{env.ARAVIS_VER}}-x86-64-macos.tar.gz
+          path: ${{ github.workspace }}/install/*
