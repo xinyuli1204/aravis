@@ -1,11 +1,6 @@
 name: Release
 
-on:
-  push:
-    # Pattern matched against refs/tags
-    tags:
-      - '*'           # Push events to every tag not containing /
-
+on: push
 env:
   ARAVIS_VER: ${{github.ref_name}}
 
