@@ -1,8 +1,10 @@
 name: Release
 
 on:
-  push
-
+  push:
+    # Pattern matched against refs/tags
+    tags:
+      - '*'           # Push events to every tag not containing /
 
 env:
   ARAVIS_VER: ${{github.ref_name}}
@@ -20,7 +22,7 @@ jobs:
     - name: Build
       run: |
         mkdir build
-        meson setup -Ddocumentation=disabled -Dusb=enabled -Dviewer=enabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install -Dintrospection=enabled build . 
+        meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
         meson compile -C ./build
         meson install -C ./build
       env:
