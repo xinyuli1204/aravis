@@ -1,12 +1,7 @@
 name: Aravis-macOS
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  release:
-  workflow_dispatch:
+on: push
+ 
 
 jobs:
   macos:
@@ -27,14 +22,16 @@ jobs:
         brew install meson ninja gcc gettext intltool libxml2 libusb gstreamer gnome-icon-theme gobject-introspection glib
     - name: Build
       run: |
-        meson --buildtype=plain -Ddocumentation=disabled -Dgst-plugin=enabled -Dintrospection=disabled -Dusb=enabled -Dviewer=enabled -Dgentl-producer=true . ./build
-        ninja -C ./build
+        mkdir build
+        meson setup -Ddocumentation=disabled -Dusb=enabled -Dviewer=enabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install -Dintrospection=enabled build . 
+        meson compile -C ./build
+        meson install -C ./build
       env:
         CC: gcc
     - name: Tests
       run: meson test -C build/ -v
     - uses: actions/upload-artifact@v3
-      if: failure()
       with:
-        name: MacOS_Meson_Testlog
-        path: build/meson-logs/testlog.txt
+        name: aravis-${{env.ARAVIS_VER}}-macos.tar.gz
+        path: ${{ github.workspace }}/install/*
+
