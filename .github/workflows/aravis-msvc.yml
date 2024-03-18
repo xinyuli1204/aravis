@@ -21,7 +21,9 @@ jobs:
         meson compile -C ./build
         meson install -C ./build
         ls "${{ github.workspace }}/install"
-        tar -zcvf ./aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz  ${{ github.workspace }}/install/*
+        mkdir ./install
+        mv  ${{ github.workspace }}/install/*  ./install/*
+        tar -zcvf ./aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz  ./install
       env:
         CC: gcc
     - name: Tests
