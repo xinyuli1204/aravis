@@ -20,8 +20,7 @@ jobs:
         meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
         meson compile -C ./build
         meson install -C ./build
-        ls "${{ github.workspace }}/install"
-        tar -zcvf ./aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz  ./install
+        cd install && tar -zcvf ../aravis-x86-64-linux.tar.gz  .
       env:
         CC: gcc
     - name: Tests
