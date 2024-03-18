@@ -20,6 +20,8 @@ jobs:
         meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
         meson compile -C ./build
         meson install -C ./build
+        ls "${{ github.workspace }}/install"
+        tar -zcvf aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz  ${{ github.workspace }}/install/*
       env:
         CC: gcc
     - name: Tests
@@ -30,3 +32,12 @@ jobs:
       with:
         name: aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
         path: ${{ github.workspace }}/install/*
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+            aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
