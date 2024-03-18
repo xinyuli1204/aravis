@@ -21,7 +21,7 @@ jobs:
         meson compile -C ./build
         meson install -C ./build
         ls "${{ github.workspace }}/install"
-        tar -zcvf aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz  ${{ github.workspace }}/install/*
+        tar -zcvf ./aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz  ${{ github.workspace }}/install/*
       env:
         CC: gcc
     - name: Tests
@@ -31,13 +31,6 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
-        path: ${{ github.workspace }}/install/*
+        path: aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
 
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-            aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
