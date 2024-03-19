@@ -16,3 +16,4 @@ jobs:
     - uses: Dovyski/setup-opencv-action@v1.1
       with:
         opencv-version: 4.5.5
+        install-deps : false
