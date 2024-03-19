@@ -17,7 +17,7 @@ jobs:
         opencv-version: 4.5.5
         install-deps : false
         CMAKE_INSTALL_PREFIX: install
-        opencv-extra-modules: true
+        opencv-extra-modules: false
     - uses: actions/upload-artifact@v4
       with:
        name: opencv-4.5.5-x86-64-linux.tar.gz
