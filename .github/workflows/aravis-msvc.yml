@@ -13,8 +13,8 @@ jobs:
         install-deps: false
     - name: add key
       run: |
+        sudo apt-get update
         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5
-        sudo apt-get -y upgrade
         sudo apt-get -y install cmake gcc g++
         sudo apt-get  -y install libavcodec-dev libavformat-dev libswscale-dev   libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev  \
         libgtk2.0-dev  libgtk-3-dev
