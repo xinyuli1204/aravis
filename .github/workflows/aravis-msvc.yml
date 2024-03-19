@@ -1,35 +1,16 @@
-name: Release
 
+name: Test Opencv
 on: push
-env:
-  ARAVIS_VER: ${{github.ref_name}}
 
 jobs:
-  release-linux:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-22.04
+    name: Test the action
     steps:
     - uses: actions/checkout@v3
-    - name: Install dependencies
-      run: |
-        pip3 install meson ninja Markdown toml typogrify
-        sudo apt update
-        sudo apt install python3 libusb-1.0-0-dev gobject-introspection valgrind libgstreamer-plugins-bad1.0-dev libgtk-3-dev libgirepository1.0-dev python3-gi libunwind-dev gettext
-    - name: Build
-      run: |
-        mkdir build
-        meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
-        meson compile -C ./build
-        meson install -C ./build
-        cd install && tar -zcvf ../aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz  .
-      env:
-        CC: gcc
-    - name: Tests
-      run: meson test -C build/ -v
-    - name: Valgrind
-      run: meson test -C build/ -v --setup=valgrind
-    - uses: actions/upload-artifact@v3
       with:
-        name: aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
-        path: aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
-
-      
+        fetch-depth: 0
+        install-deps: false
+    - uses: Dovyski/setup-opencv-action@v1.1
+      with:
+        opencv-version: 4.5.5
