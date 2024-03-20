@@ -17,9 +17,12 @@ jobs:
       run: |
         # Download and unpack sources
         git clone https://github.com/opencv/opencv.git -b 4.5.5
-        cd opencv && mkdir -p build && mkdir -p install && cd build
+        cd opencv && git clone https://github.com/opencv/opencv_contrib -b 4.5.5
+        mkdir -p build && mkdir -p install && cd build
+        ls  "../opencv_contrib/modules"
         # Build
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_opencv_java=OFF -DBUILD_opencv_python=OFF -D CMAKE_INSTALL_PREFIX=../install ../
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_opencv_java=OFF -DBUILD_opencv_python=OFF -DCMAKE_INSTALL_PREFIX=../install \
+         -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules ../
         make -j4
         make install
                 
