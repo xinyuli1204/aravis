@@ -17,10 +17,11 @@ jobs:
       run: |
         # Download and unpack sources
         git clone https://github.com/opencv/opencv.git -b 4.5.5
-        cd opencv && mkdir -p build && cd build
+        cd opencv && mkdir -p build && mkdir -p install && cd build
         # Build
-        cmake -GNinja -D CMAKE_BUILD_TYPE=Release -DBUILD_opencv_java=OFF -DBUILD_opencv_python=OFF -D CMAKE_INSTALL_PREFIX=install ../
-        cmake --build . --config Release --target install
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_opencv_java=OFF -DBUILD_opencv_python=OFF -D CMAKE_INSTALL_PREFIX=../install ../
+        make -j4
+        make install
                 
    
     - uses: actions/upload-artifact@v4
