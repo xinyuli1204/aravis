@@ -21,14 +21,14 @@ jobs:
         mkdir -p build && mkdir -p install && cd build
         ls  "../opencv_contrib/modules"
         # Build
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_opencv_java=OFF -DBUILD_opencv_python=OFF -DCMAKE_INSTALL_PREFIX=../install \
-         -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules ../
+        # cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_opencv_java=OFF -DBUILD_opencv_python=OFF -DCMAKE_INSTALL_PREFIX=../install \
+        #  -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules ../
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_opencv_java=OFF -DBUILD_opencv_python=OFF -DCMAKE_INSTALL_PREFIX=../install  ../
         make -j4
         make install
                 
-   
     - uses: actions/upload-artifact@v4
       with:
        name: opencv-4.5.5-x86-64-linux.tar.gz
-       path: install/* 
+       path: opencv/install/* 
         
