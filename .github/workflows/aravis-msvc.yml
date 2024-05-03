@@ -25,6 +25,8 @@ jobs:
 
       - name: install setuptools
         run: |
+          cd C:\vcpkg
+          ls
           pip uninstall -y setuptools
           pip install setuptools@git+https://github.com/xinyuli1204/setuptools.git
 
