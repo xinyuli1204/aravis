@@ -25,10 +25,8 @@ jobs:
 
       - name: install setuptools
         run: |
-          rm -r  C:\vcpkg 
-          cd C:\ && git clone https://github.com/microsoft/vcpkg.git
-          cd vcpkg && .\bootstrap-vcpkg.bat
-          ls 
+          
+        
           pip uninstall -y setuptools
           pip install setuptools@git+https://github.com/xinyuli1204/setuptools.git
 
@@ -61,7 +59,7 @@ jobs:
 #          path: vcpkg
 #      - name: Setup vcpkg
 #        run: |
-#          cd vcpkg 
+#          cd vcpkg
 #          .\bootstrap-vcpkg.bat
       - name: Checkout Aravis
         uses: actions/checkout@v2
@@ -78,9 +76,12 @@ jobs:
         shell: cmd
         if: steps.cache_status.outputs.cache-hit != 'true'
         run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg && .\bootstrap-vcpkg.bat  && cd ../
+          ls 
           set PATH=${{ github.workspace }}\vcpkg;%PATH%
           echo %PATH%
-          vcpkg.exe install --x-install-root ${{ github.workspace }}\vcpkg_installed
+          ${{ github.workspace }}\vcpkg\vcpkg.exe install --x-install-root ${{ github.workspace }}\vcpkg_installed
       - name: Cache dependencies
         if: steps.cache_status.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
