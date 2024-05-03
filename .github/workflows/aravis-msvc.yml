@@ -23,10 +23,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      # - name: install setuptools
-      #   run: |
-      #     pip uninstall -y setuptools
-      #     pip install setuptools@git+https://github.com/xinyuli1204/setuptools.git
+      - name: install setuptools
+        run: |
+          pip uninstall -y setuptools
+          pip install setuptools@git+https://github.com/xinyuli1204/setuptools.git
           
       - name: Setup winget for pkg-config-lite
         uses: Cyberboss/install-winget@v1
