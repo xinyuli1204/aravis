@@ -25,8 +25,6 @@ jobs:
 
       - name: install setuptools
         run: |
-          
-        
           pip uninstall -y setuptools
           pip install setuptools@git+https://github.com/xinyuli1204/setuptools.git
 
@@ -52,26 +50,18 @@ jobs:
         with:
           version: 1.11.1
           dest: ${{env.NINJA_INSTALL}}
-#      - name: Checkout vcpkg
-#        uses: actions/checkout@v3
-#        with:
-#          repository: microsoft/vcpkg
-#          path: vcpkg
-#      - name: Setup vcpkg
-#        run: |
-#          cd vcpkg
-#          .\bootstrap-vcpkg.bat
+
       - name: Checkout Aravis
         uses: actions/checkout@v2
         with:
           # for all commit, tags, and logs
           fetch-depth: 0
-      # - name: Check for existing cache
-      #   id: cache_status
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ${{ github.workspace }}\vcpkg_installed
-      #     key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+      - name: Check for existing cache
+        id: cache_status
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}\vcpkg_installed
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
       - name: Install dependencies
         shell: cmd
         run: |
@@ -88,12 +78,12 @@ jobs:
           set PATH=${{ github.workspace }}\vcpkg;%PATH%
           echo %PATH%
           ${{ github.workspace }}\vcpkg\vcpkg.exe install --x-install-root ${{ github.workspace }}\vcpkg_installed
-      # - name: Cache dependencies
-      #   if: steps.cache_status.outputs.cache-hit != 'true'
-      #   uses: actions/cache/save@v4
-      #   with:
-      #     path: ${{ github.workspace }}\vcpkg_installed
-      #     key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+      - name: Cache dependencies
+        if: steps.cache_status.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}\vcpkg_installed
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
 
       - name: check config
         run: |
@@ -110,9 +100,14 @@ jobs:
           set PATH=${{ github.workspace }}\vcpkg_installed\x64-windows\tools\gobject-introspection;%PATH%
           set PATH=${{env.NINJA_INSTALL}};%PATH%
           set PKG_CONFIG_PATH=${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig\;%PKG_CONFIG_PATH%
-          meson setup --pkg-config-path ${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig -Ddocumentation=disabled -Dusb=enabled -Dviewer=disabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}\install -Dintrospection=disabled build .
+          meson setup --pkg-config-path ${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig -Ddocumentation=disabled -Dusb=enabled -Dviewer=disabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}\install -Dintrospection=enabled build .
           meson compile -C ./build
           meson install -C ./build
+
+      - name: check config
+        run: |
+          ls build/src
+          
 
       - name: Check if aravis-0.8.lib exists
         uses: actions/upload-artifact@v4
