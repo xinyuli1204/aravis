@@ -106,13 +106,13 @@ jobs:
       - name: Archive Test Results
         if: success() || failure()
         run: |
-          cd aravis\build && ls
+          cd build\src && ls
       
       - name: Check if aravis-0.8.lib exists
         id: check_files
         uses: andstor/file-existence-action@v3
         with:
-          files: ${{ github.workspace }}\aravis\build\aravis-0.8.lib
+          files: ${{ github.workspace }}\aravis\build\src\aravis-0.8.lib
           fail: true
           
     
