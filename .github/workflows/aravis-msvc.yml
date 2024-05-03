@@ -66,12 +66,12 @@ jobs:
         with:
           # for all commit, tags, and logs
           fetch-depth: 0
-      - name: Check for existing cache
-        id: cache_status
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}\vcpkg_installed
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+      # - name: Check for existing cache
+      #   id: cache_status
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ github.workspace }}\vcpkg_installed
+      #     key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
       - name: Install dependencies
         shell: cmd
         if: steps.cache_status.outputs.cache-hit != 'true'
@@ -82,12 +82,12 @@ jobs:
           set PATH=${{ github.workspace }}\vcpkg;%PATH%
           echo %PATH%
           ${{ github.workspace }}\vcpkg\vcpkg.exe install --x-install-root ${{ github.workspace }}\vcpkg_installed
-      - name: Cache dependencies
-        if: steps.cache_status.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ github.workspace }}\vcpkg_installed
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+      # - name: Cache dependencies
+      #   if: steps.cache_status.outputs.cache-hit != 'true'
+      #   uses: actions/cache/save@v4
+      #   with:
+      #     path: ${{ github.workspace }}\vcpkg_installed
+      #     key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
 
       - name: check config
         run: |
