@@ -36,7 +36,6 @@ static char *arv_option_access_check = NULL;
 static gboolean arv_option_gv_allow_broadcast_discovery_ack = FALSE;
 static gboolean arv_option_show_time = FALSE;
 static gboolean arv_option_show_version = FALSE;
-static char *arv_option_gv_port_range = NULL;
 
 static const GOptionEntry arv_option_entries[] =
 {
@@ -76,11 +75,6 @@ static const GOptionEntry arv_option_entries[] =
 		"time",				't', 0, G_OPTION_ARG_NONE,
 		&arv_option_show_time, 		"Show execution time",
 		NULL
-	},
-	{
-		"gv-port-range",		'\0', 0, G_OPTION_ARG_STRING,
-		&arv_option_gv_port_range,	"GV port range",
-		"<min>-<max>"
 	},
 	{
 		"debug", 			'd', 0, G_OPTION_ARG_STRING,
@@ -176,11 +170,11 @@ arv_tool_show_feature (ArvGcFeatureNode *node, ArvToolListMode list_mode, int le
                                                                  arv_gc_boolean_get_value (ARV_GC_BOOLEAN (node),
                                                                                            &error) ?  "true" : "false");
                                 } else if (ARV_IS_GC_REGISTER (node)) {
-                                        guint64 length;
+                                        void* buffer;
+                                        guint64 length = arv_gc_register_get_length(ARV_GC_REGISTER (node), &error);
+                                        arv_gc_register_get (ARV_GC_REGISTER (node), buffer, length, &error);
 
-                                        length = arv_gc_register_get_length(ARV_GC_REGISTER (node), &error);
-
-                                        value = g_strdup_printf ("%" G_GUINT64_FORMAT, length);
+                                        value = g_strdup_printf ("%" G_GUINT64_FORMAT, (char *)buffer ?  length : 0);
                                 }
                         }
 
@@ -377,25 +371,26 @@ arv_tool_control (int argc, char **argv, ArvDevice *device)
                                                 if (error == NULL)
                                                         printf ("%s = %s\n", tokens[0], value ?  "true" : "false");
                                         } else if (ARV_IS_GC_REGISTER (feature)) {
-                                                unsigned char *buffer;
-                                                guint64 length;
+                                                unsigned char* buffer;
 
-                                                buffer = arv_gc_register_dup (ARV_GC_REGISTER (feature), &length,
-                                                                              &error);
-                                                if (error == NULL && buffer != NULL) {
-                                                        GString *dump;
+                                                guint64 length = arv_gc_register_get_length(ARV_GC_REGISTER (feature), &error);    
+                                                if (error == NULL)
+                                                        printf ("Length of %s = %"G_GUINT64_FORMAT"\n", tokens[0], length);        
 
-                                                        dump = g_string_new("");
-                                                        printf ("%s = %" G_GUINT64_FORMAT
-                                                                " byte(s)@0x%08" G_GINT64_MODIFIER "x\n",
-                                                                tokens[0], length,
-                                                                arv_gc_register_get_address (ARV_GC_REGISTER(feature),
-                                                                                             NULL));
-                                                        arv_g_string_append_hex_dump(dump, buffer, length);
-                                                        printf ("%s\n", dump->str);
-                                                        g_string_free (dump, TRUE);
+                                                buffer = (unsigned char*) malloc(length);
+                                                arv_gc_register_get (ARV_GC_REGISTER (feature), (void*)buffer, length, &error);    
+
+                                                if (error == NULL){
+                                                        printf("Content of %s =", tokens[0]);
+                                                        for( int i = 0; i < length; i++){
+                                                                if ( i%8 == 0){
+                                                                        printf("\n\t");
+                                                                }
+                                                                printf("0x%02x ", *((buffer)+i));
+                                                        }
                                                 }
-                                                g_free(buffer);
+                                                printf("\n");
+                                                free(buffer);
                                         }else {
                                                 const char *value =  arv_gc_feature_node_get_value_as_string
                                                         (ARV_GC_FEATURE_NODE (feature), &error);
@@ -774,16 +769,6 @@ main (int argc, char **argv)
 		printf ("Invalid access check policy\n");
 		return EXIT_FAILURE;
 	}
-
-        if (arv_option_gv_port_range != NULL) {
-                gboolean success;
-
-                success = arv_set_gv_port_range_from_string (arv_option_gv_port_range);
-                if (!success) {
-                        printf ("Invalid GV port range (%s)\n", arv_option_gv_port_range);
-                        return EXIT_FAILURE;
-                }
-        }
 
 	if (!arv_debug_enable (arv_option_debug_domains)) {
 		if (g_strcmp0 (arv_option_debug_domains, "help") != 0)

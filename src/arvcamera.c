@@ -48,7 +48,6 @@
 #if ARAVIS_HAS_USB
 #include <arvuvdevice.h>
 #endif
-#include <arvgentldeviceprivate.h>
 #include <arvenums.h>
 #include <arvstr.h>
 
@@ -800,23 +799,13 @@ arv_camera_dup_available_pixel_formats_as_display_names (ArvCamera *camera, guin
  *
  * Starts video stream acquisition.
  *
- * Returns: %TRUE on success
- *
  * Since: 0.8.0
  */
 
-gboolean
+void
 arv_camera_start_acquisition (ArvCamera *camera, GError **error)
 {
-	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
-        gboolean success;
-
-	g_return_val_if_fail (ARV_IS_CAMERA (camera), FALSE);
-
-        success = arv_device_start_acquisition (priv->device, error);
-        success = success && arv_camera_execute_command (camera, "AcquisitionStart", error);
-
-        return success;
+	arv_camera_execute_command (camera, "AcquisitionStart", error);
 }
 
 /**
@@ -826,23 +815,13 @@ arv_camera_start_acquisition (ArvCamera *camera, GError **error)
  *
  * Stops video stream acquisition.
  *
- * Returns: %TRUE on success
- *
  * Since: 0.8.0
  */
 
-gboolean
+void
 arv_camera_stop_acquisition (ArvCamera *camera, GError **error)
 {
-	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
-        gboolean success;
-
-	g_return_val_if_fail (ARV_IS_CAMERA (camera), FALSE);
-
-	success = arv_camera_execute_command (camera, "AcquisitionStop", error);
-        success = success && arv_device_stop_acquisition (priv->device, error);
-
-        return success;
+	arv_camera_execute_command (camera, "AcquisitionStop", error);
 }
 
 /**
@@ -852,23 +831,13 @@ arv_camera_stop_acquisition (ArvCamera *camera, GError **error)
  *
  * Aborts video stream acquisition.
  *
- * Returns: %TRUE on success
- *
  * Since: 0.8.0
  */
 
-gboolean
+void
 arv_camera_abort_acquisition (ArvCamera *camera, GError **error)
 {
-	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
-        gboolean success;
-
-	g_return_val_if_fail (ARV_IS_CAMERA (camera), FALSE);
-
-	success = arv_camera_execute_command (camera, "AcquisitionAbort", error);
-        success = success && arv_device_stop_acquisition (priv->device, error);
-
-        return success;
+	arv_camera_execute_command (camera, "AcquisitionAbort", error);
 }
 
 /**
@@ -2465,7 +2434,7 @@ arv_camera_is_binning_available (ArvCamera *camera, GError **error)
  *
  * Return: gain representation, %ARV_GC_REPRESENTATION_UNDEFINED if not available.
  *
- * Since: 0.10.0
+ * Since: 0.8.31
  */
 
 ArvGcRepresentation
@@ -2492,7 +2461,7 @@ arv_camera_get_gain_representation (ArvCamera *camera)
  *
  * Return: exposure time representation, %ARV_GC_REPRESENTATION_UNDEFINED if not available.
  *
- * Since: 0.10.0
+ * Since: 0.8.31
  */
 
 ArvGcRepresentation
@@ -2523,19 +2492,17 @@ arv_camera_get_exposure_time_representation (ArvCamera *camera)
  *
  * Execute a Genicam command.
  *
- * Returns: %TRUE on success
- *
  * Since: 0.8.0
  */
 
-gboolean
+void
 arv_camera_execute_command (ArvCamera *camera, const char *feature, GError **error)
 {
 	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
 
-	g_return_val_if_fail (ARV_IS_CAMERA (camera), FALSE);
+	g_return_if_fail (ARV_IS_CAMERA (camera));
 
-	return arv_device_execute_command (priv->device, feature, error);
+	arv_device_execute_command (priv->device, feature, error);
 }
 
 /**
@@ -2910,17 +2877,16 @@ arv_camera_get_float_increment (ArvCamera *camera, const char *feature, GError *
  * arv_camera_set_register:
  * @camera: a #ArvCamera
  * @feature: feature name
- * @length: buffer length
  * @value: new feature value
  * @error: a #GError placeholder, %NULL to ignore
  *
- * Set a register content.
+ * Set a register feature value.
  *
- * Since: 0.10.0
+ * Since: 
  */
 
 void
-arv_camera_set_register (ArvCamera *camera, const char *feature, guint64 length, void *value, GError **error)
+arv_camera_set_register (ArvCamera *camera, const char *feature, guint64 length, void* value, GError **error)
 {
 	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
 
@@ -2930,28 +2896,44 @@ arv_camera_set_register (ArvCamera *camera, const char *feature, guint64 length,
 }
 
 /**
- * arv_camera_dup_register:
+ * arv_camera_get_register:
  * @camera: a #ArvCamera
  * @feature: feature name
- * @length: (out) (allow-none): register length
+ * @value: (out): the register feature value
  * @error: a #GError placeholder, %NULL to ignore
  *
- * Returns: register content, must be freed using [method@GLib.free].
- *
- * Since: 0.10.0
+ * Since: 
  */
 
-void *
-arv_camera_dup_register (ArvCamera *camera, const char *feature, guint64 *length, GError **error)
+void
+arv_camera_get_register (ArvCamera *camera, const char *feature,guint64 length, void* value, GError **error)
 {
 	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
 
-        if (length != NULL)
-                *length = 0;
+	g_return_if_fail (ARV_IS_CAMERA (camera));
 
-	g_return_val_if_fail (ARV_IS_CAMERA (camera), NULL);
+	arv_device_get_register_feature_value (priv->device, feature, length, value, error);
+}
 
-	return arv_device_dup_register_feature_value (priv->device, feature, length, error);
+/**
+ * arv_camera_get_register_length:
+ * @camera: a #ArvCamera
+ * @feature: feature name
+ * @error: a #GError placeholder
+ *
+ * Returns: the length of register value, 0 if not available
+ *
+ * Since:
+ */
+
+guint64
+arv_camera_get_register_length (ArvCamera *camera, const char *feature, GError **error)
+{
+	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
+
+	g_return_val_if_fail (ARV_IS_CAMERA (camera), 0);
+
+	return arv_device_get_register_feature_length (priv->device, feature, error);
 }
 
 /**
@@ -3109,7 +3091,7 @@ arv_camera_is_feature_implemented (ArvCamera *camera, const char *feature, GErro
  *
  * Return: the feature representation, %ARV_GC_REPRESENTATION_UNDEFINED if not available.
  *
- * Since: 0.10.0
+ * Since: 0.8.31
  */
 
 ArvGcRepresentation
@@ -3832,25 +3814,6 @@ arv_camera_uv_set_usb_mode (ArvCamera *camera, ArvUvUsbMode usb_mode)
 #if ARAVIS_HAS_USB
 	arv_uv_device_set_usb_mode (ARV_UV_DEVICE (priv->device), usb_mode);
 #endif
-}
-
-/**
- * arv_camera_is_gentl_device:
- * @camera: a #ArvCamera
- *
- * Returns: %TRUE if @camera is a GenTL device.
- *
- * Since: 0.10.0
- */
-
-gboolean
-arv_camera_is_gentl_device	(ArvCamera *camera)
-{
-	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
-
-	g_return_val_if_fail (ARV_IS_CAMERA (camera), FALSE);
-
-	return ARV_IS_GENTL_DEVICE (priv->device);
 }
 
 /**

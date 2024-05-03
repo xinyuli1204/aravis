@@ -690,8 +690,9 @@ auto_packet_size (ArvGvDevice *gv_device, gboolean exit_early, GError **error)
 	}
 
 	interface_address = g_inet_socket_address_get_address (G_INET_SOCKET_ADDRESS (priv->io_data->interface_address));
+	interface_socket_address = g_inet_socket_address_new (interface_address, 0);
 	socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, G_SOCKET_PROTOCOL_UDP, NULL);
-	interface_socket_address = arv_socket_bind_with_range (socket, interface_address, 0, FALSE, NULL);
+	g_socket_bind (socket, interface_socket_address, FALSE, NULL);
 	local_address = G_INET_SOCKET_ADDRESS (g_socket_get_local_address (socket, NULL));
 	port = g_inet_socket_address_get_port (local_address);
 
@@ -1257,7 +1258,7 @@ arv_gv_device_is_controller (ArvGvDevice *gv_device)
 }
 
 static char *
-_load_genicam (ArvGvDevice *gv_device, guint32 address, size_t  *size, char **url, GError **error)
+_load_genicam (ArvGvDevice *gv_device, guint32 address, size_t  *size, GError **error)
 {
         GError *local_error = NULL;
 	char filename[ARV_GVBS_XML_URL_SIZE];
@@ -1268,10 +1269,8 @@ _load_genicam (ArvGvDevice *gv_device, guint32 address, size_t  *size, char **ur
 	guint64 file_size;
 
 	g_return_val_if_fail (size != NULL, NULL);
-        g_return_val_if_fail (url != NULL, NULL);
 
 	*size = 0;
-        *url = NULL;
 
 	if (!arv_gv_device_read_memory (ARV_DEVICE (gv_device), address, ARV_GVBS_XML_URL_SIZE, filename, error))
 		return NULL;
@@ -1288,10 +1287,8 @@ _load_genicam (ArvGvDevice *gv_device, guint32 address, size_t  *size, char **ur
                         gsize len;
 
                         g_file_get_contents (path, &genicam, &len, NULL);
-                        if (genicam) {
+                        if (genicam)
                                 *size = len;
-                                *url = g_strdup (filename);
-                        }
                 } else if (g_ascii_strcasecmp (scheme, "local") == 0) {
                         arv_info_device ("[GvDevice::load_genicam] Xml address = 0x%" G_GINT64_MODIFIER "x - "
                                          "size = 0x%" G_GINT64_MODIFIER "x - %s", file_address, file_size, path);
@@ -1333,24 +1330,17 @@ _load_genicam (ArvGvDevice *gv_device, guint32 address, size_t  *size, char **ur
                                                                                        &tmp_buffer_size);
 
                                                         g_free (genicam);
-                                                        *size = tmp_buffer_size;
+                                                        file_size = tmp_buffer_size;
                                                         genicam = tmp_buffer;
-                                                } else {
+                                                } else
                                                         arv_warning_device ("[GvDevice::load_genicam] Invalid format");
-                                                        g_clear_pointer (&genicam, g_free);
-                                                }
                                                 arv_zip_free (zip);
-                                        } else {
-                                                *size = file_size;
                                         }
-
-                                        if (genicam != NULL)
-                                                *url = g_strdup_printf ("%s:///%s;%" G_GINT64_MODIFIER "x;%"
-                                                                        G_GINT64_MODIFIER "x",
-                                                                        scheme, path,
-                                                                        file_address, file_size);
+                                        *size = file_size;
                                 } else {
-                                        g_clear_pointer (&genicam, g_free);
+                                        g_free (genicam);
+                                        genicam = NULL;
+                                        *size = 0;
                                 }
                         }
                 } else if (g_ascii_strcasecmp (scheme, "http")) {
@@ -1366,10 +1356,8 @@ _load_genicam (ArvGvDevice *gv_device, guint32 address, size_t  *size, char **ur
                                 data_stream = g_data_input_stream_new (G_INPUT_STREAM (stream));
                                 genicam = g_data_input_stream_read_upto (data_stream, "", 0, &len, NULL, NULL);
 
-                                if (genicam) {
+                                if (genicam)
                                         *size = len;
-                                        *url = g_strdup (filename);
-                                }
 
                                 g_object_unref (data_stream);
                                 g_object_unref (stream);
@@ -1380,26 +1368,51 @@ _load_genicam (ArvGvDevice *gv_device, guint32 address, size_t  *size, char **ur
                 }
         }
 
+	g_free (scheme);
+	g_free (path);
+
         if (local_error != NULL) {
                 arv_warning_device("Failed to load GENICAM data: %s", local_error->message);
                 g_propagate_error (error, local_error);
         }
 
-	g_free (scheme);
-	g_free (path);
-
 	return genicam;
+}
+
+static const char *
+_get_genicam_xml (ArvDevice *device, size_t *size, GError **error)
+{
+	ArvGvDevice *gv_device = ARV_GV_DEVICE (device);
+	ArvGvDevicePrivate *priv = arv_gv_device_get_instance_private (gv_device);
+	GError *local_error = NULL;
+	char *xml;
+
+	if (priv->genicam_xml != NULL) {
+		*size = priv->genicam_xml_size;
+		return priv->genicam_xml;
+	}
+
+	*size = 0;
+
+	xml = _load_genicam (gv_device, ARV_GVBS_XML_URL_0_OFFSET, size, &local_error);
+	if (xml == NULL && local_error == NULL)
+		xml = _load_genicam (gv_device, ARV_GVBS_XML_URL_1_OFFSET, size, &local_error);
+
+	if (local_error != NULL) {
+		g_propagate_error (error, local_error);
+		return NULL;
+	}
+
+	priv->genicam_xml = xml;
+	priv->genicam_xml_size = *size;
+
+	return xml;
 }
 
 static const char *
 arv_gv_device_get_genicam_xml (ArvDevice *device, size_t *size)
 {
-	ArvGvDevicePrivate *priv = arv_gv_device_get_instance_private (ARV_GV_DEVICE (device));
-
-        if (size != NULL)
-                *size = priv->genicam_xml_size;
-
-        return priv->genicam_xml;
+	return _get_genicam_xml (device, size, NULL);
 }
 
 void
@@ -1817,31 +1830,15 @@ static void
 arv_gv_device_load_genicam (ArvGvDevice *gv_device, GError **error)
 {
 	ArvGvDevicePrivate *priv = arv_gv_device_get_instance_private (gv_device);
-        GError *local_error = NULL;
-        char *url = NULL;
-	char *xml;
+	const char *genicam;
 	size_t size;
 
-	size = 0;
+	genicam = _get_genicam_xml (ARV_DEVICE (gv_device), &size, error);
+	if (genicam != NULL) {
+		priv->genicam = arv_gc_new (ARV_DEVICE (gv_device), genicam, size);
 
-	xml = _load_genicam (gv_device, ARV_GVBS_XML_URL_0_OFFSET, &size, &url, &local_error);
-	if (xml == NULL && local_error == NULL)
-		xml = _load_genicam (gv_device, ARV_GVBS_XML_URL_1_OFFSET, &size, &url, &local_error);
-
-	if (local_error != NULL) {
-		g_propagate_error (error, local_error);
-                g_free (xml);
-                g_free (url);
-		return;
+                arv_gc_set_default_gv_features(priv->genicam);
 	}
-
-	priv->genicam_xml = xml;
-	priv->genicam_xml_size = size;
-        priv->genicam = arv_gc_new (ARV_DEVICE (gv_device), xml, size);
-        arv_gc_set_default_gv_features(priv->genicam);
-        arv_dom_document_set_url (ARV_DOM_DOCUMENT(priv->genicam), url);
-
-        g_free (url);
 }
 
 /* ArvDevice implemenation */
@@ -2000,14 +1997,12 @@ arv_gv_device_constructed (GObject *object)
 
 	io_data->packet_id = 65300; /* Start near the end of the circular counter */
 
+	io_data->interface_address = g_inet_socket_address_new (priv->interface_address, 0);
 	io_data->device_address = g_inet_socket_address_new (priv->device_address, ARV_GVCP_PORT);
 	io_data->socket = g_socket_new (G_SOCKET_FAMILY_IPV4,
 					G_SOCKET_TYPE_DATAGRAM,
 					G_SOCKET_PROTOCOL_UDP, NULL);
-        io_data->interface_address = arv_socket_bind_with_range (io_data->socket, priv->interface_address, 0,
-                                                                 FALSE, &local_error);
-
-	if (io_data->interface_address == NULL) {
+	if (!g_socket_bind (io_data->socket, io_data->interface_address, FALSE, &local_error)) {
 		if (local_error == NULL)
 			local_error = g_error_new (ARV_DEVICE_ERROR, ARV_DEVICE_ERROR_UNKNOWN,
 						   "Unknown error trying to bind device interface");

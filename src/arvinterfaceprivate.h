@@ -43,7 +43,6 @@ typedef struct {
 	char *manufacturer_info;
 	char *model;
 	char *serial_nbr;
-        const char *protocol;
 } ArvInterfaceDeviceIds;
 
 void            arv_interface_set_flags         (ArvInterface *iface, int flags);

@@ -83,10 +83,13 @@ switch_roi (gpointer user_data)
 	ApplicationData *data = user_data;
 	gint width;
 	gint height;
-        gboolean success;
+        guint n_deleted;
 
-	success = arv_camera_stop_acquisition (data->camera, NULL);
-        g_assert (success);
+	arv_camera_stop_acquisition (data->camera, NULL);
+
+        n_deleted = arv_stream_stop_thread (data->stream, FALSE);
+
+        g_assert (n_deleted == 0);
 
 	data->width += SIZE_INC;
 	if (data->width > WIDTH_MAX)
@@ -103,8 +106,9 @@ switch_roi (gpointer user_data)
 
 	printf ("image size set to %dx%d\n", width, height);
 
-	success = arv_camera_start_acquisition (data->camera, NULL);
-        g_assert (success);
+        arv_stream_start_thread (data->stream);
+
+	arv_camera_start_acquisition (data->camera, NULL);
 
 	return TRUE;
 }

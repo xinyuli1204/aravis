@@ -205,10 +205,15 @@ dynamic_roi_test (void)
 	arv_stream_set_emit_signals (stream, TRUE);
 
 	for (j = 0; j < G_N_ELEMENTS (rois); j++) {
+		unsigned int n_deleted;
 		int height, width;
 
-                if (j > 0)
-                        g_assert (arv_stream_delete_buffers (stream) == N_BUFFERS);
+		n_deleted = arv_stream_stop_thread (stream, TRUE);
+
+		if (j == 0)
+			g_assert (n_deleted == 0);
+		else
+			g_assert (n_deleted == N_BUFFERS);
 
 		buffer_count = 0;
 
@@ -222,6 +227,8 @@ dynamic_roi_test (void)
 
 		for (i = 0; i < N_BUFFERS; i++)
 			arv_stream_push_buffer (stream, arv_buffer_new (payload, NULL));
+
+		arv_stream_start_thread (stream);
 
 		arv_camera_start_acquisition (camera, NULL);
 

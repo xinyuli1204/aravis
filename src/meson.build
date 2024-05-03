@@ -60,10 +60,6 @@ library_sources = [
 	'arvgvinterface.c',
 	'arvgvdevice.c',
 	'arvgvstream.c',
-	'arvgentlsystem.c',
-	'arvgentlinterface.c',
-	'arvgentldevice.c',
-	'arvgentlstream.c',
 	'arvfakeinterface.c',
 	'arvfakedevice.c',
 	'arvfakestream.c',
@@ -156,11 +152,6 @@ library_headers = [
 	'arvgvinterface.h',
 	'arvgvstream.h',
 
-	'arvgentlsystem.h',
-	'arvgentlinterface.h',
-	'arvgentldevice.h',
-	'arvgentlstream.h',
-
 	'arvinterface.h',
 	'arvsystem.h',
 	'arvrealtime.h',
@@ -187,9 +178,6 @@ library_private_headers = [
 	'arvgvinterfaceprivate.h',
 	'arvgvspprivate.h',
 	'arvgvstreamprivate.h',
-	'arvgentlinterfaceprivate.h',
-	'arvgentldeviceprivate.h',
-	'arvgentlstreamprivate.h',
 	'arvinterfaceprivate.h',
 	'arvmiscprivate.h',
 	'arvnetworkprivate.h',
@@ -228,26 +216,6 @@ if usb_dep.found()
 		]
 endif
 
-if v4l2_dep.found()
-  library_sources += [
-    'arvv4l2interface.c',
-    'arvv4l2device.c',
-    'arvv4l2stream.c'
-  ]
-  library_no_introspection_sources += [
-  ]
-  library_headers += [
-    'arvv4l2interface.h',
-    'arvv4l2device.h',
-    'arvv4l2stream.h'
-  ]
-  library_private_headers += [
-    'arvv4l2deviceprivate.h',
-    'arvv4l2interfaceprivate.h',
-    'arvv4l2streamprivate.h',
-  ]
-endif
-
 library_enums = gnome.mkenums_simple ('arvenumtypes', decorator: 'ARV_API', header_prefix: '#include <arvapi.h>',
 				      sources: library_headers + library_no_introspection_headers)
 library_private_enums = gnome.mkenums_simple ('arvenumtypesprivate', sources: library_private_headers)
@@ -262,8 +230,6 @@ configure_file (input: 'arvapi.h.in', output: 'arvapi.h',
 
 features_library_config_data = configuration_data ()
 features_library_config_data.set10 ('ARAVIS_HAS_USB', usb_dep.found())
-features_library_config_data.set10 ('ARAVIS_HAS_EVENT', get_option('event'))
-features_library_config_data.set10 ('ARAVIS_HAS_V4L2', v4l2_dep.found())
 features_library_config_data.set10 ('ARAVIS_HAS_PACKET_SOCKET', packet_socket_enabled)
 features_library_config_data.set10 ('ARAVIS_HAS_FAST_HEARTBEAT', get_option ('fast-heartbeat'))
 configure_file (input: 'arvfeatures.h.in', output: 'arvfeatures.h',
@@ -351,8 +317,4 @@ if introspection_option.auto() or introspection_option.enabled()
       install : true)
     introspection_enabled = true
   endif
-endif
-
-if get_option('gentl-producer')
-  subdir('gentl')
 endif

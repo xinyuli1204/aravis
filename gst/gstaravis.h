@@ -80,6 +80,8 @@ struct _GstAravis {
 	guint64 last_timestamp;
 
 	char *features;
+
+    gboolean is_gendc;
 };
 
 struct _GstAravisClass {

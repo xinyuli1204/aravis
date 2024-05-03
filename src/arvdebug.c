@@ -51,7 +51,6 @@ ArvDebugCategoryInfos arv_debug_category_infos[] = {
 	{ .name = "evaluator", 		.description = "Expression evaluator" },
 	{ .name = "viewer", 		.description = "Simple viewer application" },
 	{ .name = "misc", 		.description = "Miscellaneous code" },
-	{ .name = "gentl", 		.description = "GenTL interface" },
 };
 
 typedef struct {

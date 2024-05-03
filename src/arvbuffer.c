@@ -253,7 +253,7 @@ arv_buffer_get_chunk_data (ArvBuffer *buffer, guint64 chunk_id, size_t *size)
  *
  * Returns: %TRUE if @buffer has a payload type that contains GenDC Data.
  *
- * Since: 0.10.0
+ * Since:
  */
 
 gboolean
@@ -273,7 +273,7 @@ arv_buffer_has_gendc (ArvBuffer *buffer)
  *
  * Returns: (array length=size) (element-type guint8): a pointer to the GenDC Data .
  *
- * Since: 0.10.0
+ * Since:
  **/
 
 const void *
@@ -300,7 +300,7 @@ arv_buffer_get_gendc_data (ArvBuffer *buffer, size_t *size)
  *
  * Returns: (array length=size) (element-type guint8): a pointer to the GenDC Descriptor.
  *
- * Since: 0.10.0
+ * Since:
  **/
 
 const void *
@@ -311,7 +311,7 @@ arv_buffer_get_gendc_descriptor (ArvBuffer *buffer, size_t *size)
 
 	if (size != NULL)
 		*size = buffer->priv->gendc_descriptor_size;
-
+		
 	if (*size == 0)
 		return NULL;
 
@@ -845,7 +845,7 @@ arv_buffer_get_image_region (ArvBuffer *buffer, gint *x, gint *y, gint *width, g
 void
 arv_buffer_get_image_padding (ArvBuffer *buffer, gint *x_padding, gint *y_padding)
 {
-        arv_buffer_get_part_padding (buffer, 0, x_padding, y_padding);
+        return arv_buffer_get_part_padding (buffer, 0, x_padding, y_padding);
 }
 
 /**
