@@ -3,7 +3,7 @@ name: Aravis
 on:
   push:
     branches:
-      - test/aravis-build
+      - main
 
 env:
   ARAVIS_VER: fe6e314
