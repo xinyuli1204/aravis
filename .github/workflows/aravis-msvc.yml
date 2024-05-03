@@ -102,15 +102,17 @@ jobs:
           meson setup --pkg-config-path ${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig -Ddocumentation=disabled -Dusb=enabled -Dviewer=disabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}\install -Dintrospection=disabled build .
           meson compile -C ./build
           meson install -C ./build
-        
-      - name: Create ZIP Archive
-        shell: cmd
-        run: |
-          cd aravis\build
-          tar -caf "Aravis-${{ github.ref_name }}".zip "install"
 
-      - name: Release      
-        uses: softprops/action-gh-release@v1
+      - name: Archive Test Results
+        if: success() || failure()
+        run: |
+          cd aravis\build && ls
+      
+      - name: Check if aravis-0.8.lib exists
+        id: check_files
+        uses: andstor/file-existence-action@v3
         with:
-          files: |
-            build/Aravis-*.zip
+          files: ${{ github.workspace }}\aravis\build\aravis-0.8.lib
+          fail: true
+          
+    
