@@ -106,7 +106,7 @@ jobs:
       - name: Create ZIP Archive
         shell: cmd
         run: |
-          cd ${{ github.workspace }}]\build
+          cd ${{ github.workspace }}\build
           tar -caf "Aravis-${{ github.ref_name }}".zip "install"
       
       - name: Check if aravis-0.8.lib exists
