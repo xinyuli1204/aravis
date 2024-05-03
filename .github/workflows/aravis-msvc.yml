@@ -18,6 +18,7 @@ jobs:
       - name: Disable perl
         run: |
           rm -r C:\Strawberry\perl
+          rm -r -fo C:\vcpkg 
       - name: Setup Python 3.11
         uses: actions/setup-python@v4
         with:
