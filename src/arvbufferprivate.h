@@ -65,11 +65,6 @@ typedef struct {
 
         guint n_parts;
         ArvBufferPartInfos *parts;
-
-	gboolean has_gendc;
-	guint32 gendc_descriptor_size;
-	guint64 gendc_data_size;
-	guint64 gendc_data_offset;
 } ArvBufferPrivate;
 
 struct _ArvBuffer {

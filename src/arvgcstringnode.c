@@ -26,7 +26,6 @@
  */
 
 #include <arvgcstringnode.h>
-#include <arvgcregister.h>
 #include <arvgcstring.h>
 #include <arvgcinteger.h>
 #include <arvgcvalueindexednode.h>

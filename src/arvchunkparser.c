@@ -40,7 +40,6 @@
 #include <arvbuffer.h>
 #include <arvgcinteger.h>
 #include <arvgcfloat.h>
-#include <arvgcregister.h>
 #include <arvgcstring.h>
 #include <arvgcboolean.h>
 #include <arvdebugprivate.h>
