@@ -74,10 +74,17 @@ jobs:
       #     key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
       - name: Install dependencies
         shell: cmd
-        if: steps.cache_status.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           cd vcpkg && .\bootstrap-vcpkg.bat  && cd ../
+          ls 
+          set PATH=${{ github.workspace }}\vcpkg;%PATH%
+          echo %PATH%
+          ${{ github.workspace }}\vcpkg\vcpkg.exe install --x-install-root ${{ github.workspace }}\vcpkg_installed
+
+      - name: Install dependencies
+        shell: cmd
+        run: |
           ls 
           set PATH=${{ github.workspace }}\vcpkg;%PATH%
           echo %PATH%
