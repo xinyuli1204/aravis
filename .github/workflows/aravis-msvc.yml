@@ -72,7 +72,7 @@ jobs:
       - name: Install dependencies
         shell: cmd
         run: |
-          ${{ github.workspace }}\vcpkg\vcpkg.exe install --x-install-root ${{ github.workspace }}\vcpkg_installed
+          vcpkg.exe install --x-install-root ${{ github.workspace }}\vcpkg_installed
       
       - name: Cache dependencies
         if: steps.cache_status.outputs.cache-hit != 'true'
