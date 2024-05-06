@@ -108,6 +108,6 @@ jobs:
       - name: zip directory
         shell: powershell
         run: |
-          Compress-Archive -Path${{ github.workspace }}\install\* -Destination Aravis.zip
+          Compress-Archive -Path ${{ github.workspace }}\install\* -Destination Aravis.zip
           ls
           
