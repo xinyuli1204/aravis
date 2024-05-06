@@ -53,8 +53,8 @@ jobs:
           dest: ${{env.NINJA_INSTALL}}
 
       - name: Checkout Aravis
-      - uses: actions/checkout@v2
       - uses: ilammy/msvc-dev-cmd@v1
+      - uses: actions/checkout@v2
         with:
           # for all commit, tags, and logs
           fetch-depth: 0
