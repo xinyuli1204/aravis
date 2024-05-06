@@ -18,7 +18,7 @@ jobs:
       - name: Disable perl
         run: |
           rm -r C:\Strawberry\perl
-          rm -r -fo C:\vcpkg 
+          # rm -r -fo C:\vcpkg 
       - name: Setup Python 3.11
         uses: actions/setup-python@v4
         with:
@@ -27,7 +27,7 @@ jobs:
       - name: install setuptools
         run: |
           pip uninstall -y setuptools
-          pip install setuptools@git+https://github.com/xinyuli1204/setuptools.git
+          # pip install setuptools@git+https://github.com/xinyuli1204/setuptools.git
       - name: Setup winget for pkg-config-lite
         uses: Cyberboss/install-winget@v1
         with:
