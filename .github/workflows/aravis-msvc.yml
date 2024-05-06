@@ -1,9 +1,7 @@
 name: Aravis
 
 on:
-  push:
-    tags:
-      - v*
+  push
 
 env:
   ARAVIS_VER: fe6e314
@@ -24,6 +22,10 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: install pygobject
+        run: pip install  pygobject
+
+      
       - name: Setup winget for pkg-config-lite
         uses: Cyberboss/install-winget@v1
         with:
@@ -31,7 +33,7 @@ jobs:
 
       - name: Setup pkg-config-lite
         run: winget install bloodrock.pkg-config-lite --accept-source-agreements --accept-package-agreements --location ${{env.PKG_CONFIG_INSTALL}} --version ${{env.PKG_CONFIG_VERSION}}
-
+      
       - name: Confirm pkg-config
         id: pkg-config-existence
         uses: andstor/file-existence-action@v3
