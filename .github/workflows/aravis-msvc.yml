@@ -85,8 +85,6 @@ jobs:
       - name: Build Aravis
         shell: cmd
         run: |
-          set CC=cl
-          set CXX=cl
           set PATH=${{env.PKG_CONFIG_INSTALL}}\pkg-config-lite-${{env.PKG_CONFIG_VERSION}}\bin;%PATH%
           set PATH=${{ github.workspace }}\vcpkg_installed\x64-windows\bin;%PATH%
           set PATH=${{ github.workspace }}\vcpkg_installed\x64-windows\tools\gobject-introspection;%PATH%
@@ -103,8 +101,18 @@ jobs:
       - name: Upload 
         uses: actions/upload-artifact@v4
         with:
-          name: aravis-build
+          name: aravis-install
 
           # A file, directory or wildcard pattern that describes what to upload
           # Required.
-          path: ${{ github.workspace }}\build
+          path: ${{ github.workspace }}\install
+
+      - name: Create ZIP Archive
+        shell: cmd
+        run: |
+          tar -caf "Aravis-${{ github.ref_name }}".zip "install"
+      
+      - name: Release      
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Aravis-*.zip
