@@ -58,13 +58,13 @@ jobs:
       - name: Checkout Aravis
         uses: actions/checkout@v2
 
-      # - name: Check for existing cache
-      #   id: cache_status
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ${{ github.workspace }}\vcpkg_installed
-      #     key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
-      - name: Install dependencies
+      - name: Check for existing cache
+        id: cache_status
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}\vcpkg_installed
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+      - name: Install vcpkg
         shell: cmd
         run: |
           git clone https://github.com/microsoft/vcpkg.git
@@ -102,3 +102,10 @@ jobs:
           # A file, directory or wildcard pattern that describes what to upload
           # Required.
           path: ${{ github.workspace }}\install
+      
+      - name: zip directory
+        shell: powershell
+        run: |
+          Compress-Archive -Path${{ github.workspace }}\install\* -Destination Aravis.zip
+          ls
+          
