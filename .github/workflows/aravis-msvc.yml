@@ -52,18 +52,18 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
       
-      # - name: Set up MSVC
-      #   uses: ilammy/msvc-dev-cmd@v1
+      - name: Set up MSVC command env
+        uses: ilammy/msvc-dev-cmd@v1
       
       - name: Checkout Aravis
         uses: actions/checkout@v2
 
-      - name: Check for existing cache
-        id: cache_status
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}\vcpkg_installed
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+      # - name: Check for existing cache
+      #   id: cache_status
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ github.workspace }}\vcpkg_installed
+      #     key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
       - name: Install dependencies
         shell: cmd
         run: |
@@ -94,10 +94,6 @@ jobs:
           meson compile -C ./build
           meson install -C ./build
       
-      - name: List Buildfile
-        run: |
-          ls build/src
-          
       - name: Upload 
         uses: actions/upload-artifact@v4
         with:
@@ -106,13 +102,3 @@ jobs:
           # A file, directory or wildcard pattern that describes what to upload
           # Required.
           path: ${{ github.workspace }}\install
-
-      - name: Create ZIP Archive
-        shell: cmd
-        run: |
-          tar -caf "Aravis-${{ github.ref_name }}".zip "install"
-      
-      - name: Release      
-        uses: softprops/action-gh-release@v1
-        with:
-          files: Aravis-*.zip
