@@ -57,12 +57,12 @@ jobs:
         with:
           # for all commit, tags, and logs
           fetch-depth: 0
-      # - name: Check for existing cache
-      #   id: cache_status
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ${{ github.workspace }}\vcpkg_installed
-      #     key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+      - name: Check for existing cache
+        id: cache_status
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}\vcpkg_installed
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
       - name: Install dependencies
         shell: cmd
         run: |
