@@ -43,9 +43,9 @@ jobs:
           fail: true
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
-      - name: Setup Meson
-        run: |
-          pip install meson
+      # - name: Setup Meson
+      #   run: |
+      #     pip install meson
       - name: Setup Ninja
         uses: ahmedyarub/setup-ninja@master
         with:
