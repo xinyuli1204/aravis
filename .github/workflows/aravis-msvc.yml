@@ -93,6 +93,8 @@ jobs:
           meson setup --pkg-config-path ${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig -Ddocumentation=disabled -Dusb=enabled -Dviewer=disabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}\install -Dintrospection=enabled build .
           meson compile -C ./build
           meson install -C ./build
+          tar -a -cf Test.zip ./install
+          ls
       
       - name: Upload 
         uses: actions/upload-artifact@v4
