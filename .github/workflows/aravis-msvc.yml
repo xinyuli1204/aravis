@@ -2,8 +2,8 @@ name: Aravis
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - v*
 
 env:
   ARAVIS_VER: fe6e314
@@ -18,31 +18,31 @@ jobs:
       - name: Disable perl
         run: |
           rm -r C:\Strawberry\perl
-      
+
       - name: Setup Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      
+
       - name: Setup winget for pkg-config-lite
         uses: Cyberboss/install-winget@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Setup pkg-config-lite
         run: winget install bloodrock.pkg-config-lite --accept-source-agreements --accept-package-agreements --location ${{env.PKG_CONFIG_INSTALL}} --version ${{env.PKG_CONFIG_VERSION}}
-      
+
       - name: Confirm pkg-config
         id: pkg-config-existence
         uses: andstor/file-existence-action@v3
         with:
           files: ${{env.PKG_CONFIG_INSTALL}}\pkg-config-lite-${{env.PKG_CONFIG_VERSION}}\bin\pkg-config.exe
           fail: true
-      
+
       - name: Setup Meson
         run: |
           pip install meson
-      
+
       - name: Setup Ninja
         uses: ahmedyarub/setup-ninja@master
         with:
@@ -51,10 +51,10 @@ jobs:
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
-      
+
       - name: Set up MSVC command env
         uses: ilammy/msvc-dev-cmd@v1
-      
+
       - name: Checkout Aravis
         uses: actions/checkout@v2
 
@@ -69,12 +69,12 @@ jobs:
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           cd vcpkg && .\bootstrap-vcpkg.bat  && cd ../
- 
+
       - name: Install dependencies
         shell: cmd
         run: |
           vcpkg.exe install --x-install-root ${{ github.workspace }}\vcpkg_installed
-      
+
       - name: Cache dependencies
         if: steps.cache_status.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
@@ -94,15 +94,14 @@ jobs:
           meson compile -C ./build
           meson install -C ./build
           
-
       - name: Create ZIP Archive
         shell: cmd
         run: |
           tar -a -cf Aravis-${{ github.ref_name }}.zip ./install
           ls
 
-      # - name: Release      
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: Aravis-*.zip
-          
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Aravis-*.zip
+
