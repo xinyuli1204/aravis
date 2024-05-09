@@ -22,10 +22,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: install pygobject
-        run: pip install  pygobject
-
-      
       - name: Setup winget for pkg-config-lite
         uses: Cyberboss/install-winget@v1
         with:
@@ -95,15 +91,25 @@ jobs:
           meson setup --pkg-config-path ${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig -Ddocumentation=disabled -Dusb=enabled -Dviewer=disabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}\install -Dintrospection=enabled build .
           meson compile -C ./build
           meson install -C ./build
-          
-      - name: Create ZIP Archive
-        shell: cmd
-        run: |
-          tar -a -cf Aravis-${{ github.ref_name }}.zip ./install
-          ls
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
+
+      - name: zip directory
+        shell: powershell
+        run: |
+          Compress-Archive -Path ${{ github.workspace }}\install\* -Destination Aravis-${{ github.ref_name }}.zip
+
+            
+      - name: Upload 
+        uses: actions/upload-artifact@v4
         with:
-          files: Aravis-*.zip
+          name: aravis-pkg
+
+          # A file, directory or wildcard pattern that describes what to upload
+          # Required.
+          path: Aravis-${{ github.ref_name }}.zip
+      
+      # - name: Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: Aravis-*.zip
 
