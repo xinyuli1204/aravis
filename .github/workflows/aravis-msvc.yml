@@ -28,7 +28,7 @@ jobs:
         meson compile -C ./build
         meson install -C ./build
         export tag=${{env.ARAVIS_VER}}
-        cd install && tar -zcvf ../aravis-${${tag}#v}-x86-64-linux.tar.gz .
+        cd install && tar -zcvf ../aravis-${tag:1}-x86-64-linux.tar.gz .
       env:
         CC: gcc
     - name: Tests
@@ -65,7 +65,7 @@ jobs:
           meson compile -C ./build
           meson install -C ./build
           export tag=${{env.ARAVIS_VER}}
-          cd install && tar -zcvf ../aravis-${${tag}#v}-arm-64-macos.tar.gz .
+          cd install && tar -zcvf ../aravis-${tag:1}-arm-64-macos.tar.gz .
         env:
           CC: gcc
       - name: Tests
