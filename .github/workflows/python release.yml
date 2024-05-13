@@ -70,9 +70,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.11'
       - name: Unbreak Python in Github Actions
         run: |
           find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
@@ -94,26 +91,14 @@ jobs:
           cp -r install/lib/girepository-1.0/.  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
 
-#      - name: Copy windows file
-#        if: runner.os == 'Windows'
-#        run: |
-#          mkdir windows
-#          set ARAVIS_VERSION=${{ github.event.release.tag_name }}
-#          unzip  ion-kit-*windows.zip  && mv ion-kit*/*  windows
-#          cp  windows/bin/Halide.dll python/ionpy/module/windows/Halide.dll
-#          cp  windows/bin/ion-core.dll python/ionpy/module/windows/ion-core.dll
-#          cp  windows/bin/ion-bb.dll python/ionpy/module/windows/ion-bb.dll
-#          ls  python/ionpy/module/windows
-
-
       - name: Install build
-        run: python3 -m pip install --break-system-packages build
+        run: python3 -m pip install  build
 
       - name: Build wheels
         run: |
           python3 --version
           cd aravis-python && python3 -m build
-       
+
       - uses: actions/upload-artifact@v4
         with:
           name: macos
