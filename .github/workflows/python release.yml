@@ -1,11 +1,12 @@
 name: Upload Python Package
 
 on:
-  push
+  release:
+    types: [published]
 
 env:
-  ARAVIS_VER: 2.0.0
-  # ARAVIS_VER: ${{ github.event.release.tag_name }}
+
+  ARAVIS_VER: ${{ github.event.release.tag_name }}
   PKG_CONFIG_INSTALL: C:\pkg-config
   PKG_CONFIG_VERSION: 0.28-1
   NINJA_INSTALL: C:\ninja
