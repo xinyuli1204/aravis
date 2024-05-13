@@ -27,7 +27,8 @@ jobs:
         meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
         meson compile -C ./build
         meson install -C ./build
-        cd install && tar -zcvf ../aravis-${${${{env.ARAVIS_VER}}}#v}-x86-64-linux.tar.gz .
+        export tag=${{env.ARAVIS_VER}}
+        cd install && tar -zcvf ../aravis-${${tag}#v}-x86-64-linux.tar.gz .
       env:
         CC: gcc
     - name: Tests
@@ -63,7 +64,8 @@ jobs:
           meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
           meson compile -C ./build
           meson install -C ./build
-          cd install && tar -zcvf ../aravis-${${${{env.ARAVIS_VER}}}#v}-arm-64-macos.tar.gz .
+          export tag=${{env.ARAVIS_VER}}
+          cd install && tar -zcvf ../aravis-${${tag}#v}-arm-64-macos.tar.gz .
         env:
           CC: gcc
       - name: Tests
@@ -164,9 +166,9 @@ jobs:
       - name: Zip directory
         shell: powershell
         run: |
-          $VERSION=${{env.ARAVIS_VER}}
-          $VERSION=$VERSION.TrimStart("v")
-          Compress-Archive -Path ${{ github.workspace }}\install\* -Destination "aravis-$VERSION-x86-64-windows.zip"
+          $tag=${{env.ARAVIS_VER}}
+          $tag=$tag.TrimStart("v")
+          Compress-Archive -Path ${{ github.workspace }}\install\* -Destination "aravis-$tag-x86-64-windows.zip"
 
       - name: Release
         uses: softprops/action-gh-release@v1
