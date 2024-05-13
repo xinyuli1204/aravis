@@ -5,7 +5,7 @@ on:
 
 jobs:
   linux:
-    name: Build wheel on ubuntu-latest
+    name: Build wheel on ubuntu
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
       - name: Build
         run: |
           mkdir build
-          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
+          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
           meson compile -C ./build
           meson install -C ./build
         env:
@@ -38,13 +38,14 @@ jobs:
           pip install PyGObject
       - name: Copy linux file
         run: |
-          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
+#          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
           cp  install/lib/x86_64-linux-gnu/libaravis* aravis-python/aravis/lib/
           cp -r install/lib/x86_64-linux-gnu/girepository-1.0/.  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
 
 
   macos:
+    name: Build wheel on macos
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
@@ -63,7 +64,7 @@ jobs:
       - name: Build
         run: |
           mkdir build
-          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
+          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
           meson compile -C ./build
           meson install -C ./build
 
