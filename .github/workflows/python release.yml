@@ -1,9 +1,8 @@
 name: Upload Python Package
 
 on:
-  release:
-    types: [published]
-
+  push
+  
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
@@ -37,7 +36,7 @@ jobs:
       - name: install dependency
         if: runner.os == 'Linux'
         run: |
-          sudo apt install libgirepository1.0-dev gcc libcairo2-dev pkg-config
+          sudo apt-get update && sudo apt install libgirepository1.0-dev gcc libcairo2-dev pkg-config
           pip install pycairo
           pip install PyGObject
 
@@ -48,7 +47,7 @@ jobs:
           mkdir $GITHUB_WORKSPACE/linux
           tar xzf  aravis-*linux.tar.gz  -C $GITHUB_WORKSPACE/linux --strip-components 1
           cp  $GITHUB_WORKSPACE/linux/lib/x86_64-linux-gnu/libaravis* aravis-python/aravis/lib/
-          cp  $GITHUB_WORKSPACE/linux/x86_64-linux-gnu/girepository-1.0/*  aravis-python/aravis/lib/
+          cp  $GITHUB_WORKSPACE/linux/lib/x86_64-linux-gnu/girepository-1.0/*  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
 
 #      - name: Copy linux file
