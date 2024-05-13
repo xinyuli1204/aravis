@@ -4,34 +4,31 @@ on:
   push
 
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-         os: [ubuntu-latest]
-
+  linux:
+    name: Build wheel on ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-
-      # - name: GitHub Tag Name
-      #   run: |
-      #    echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
-      #    echo "Tag name from github.ref_name: ${{  github.ref_name }}"
-      #    echo ${{ github.event.release.tag_name }}
-
-      - uses: robinraju/release-downloader@v1.9
-        with:
-          latest: true
-          fileName: "aravis*"
-
 
       # Used to host cibuildwheel
       - uses: actions/setup-python@v3
         with:
           python-version: '3.11'
 
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          pip3 install meson ninja Markdown toml typogrify
+          sudo apt update
+          sudo apt install python3 libusb-1.0-0-dev gobject-introspection valgrind libgstreamer-plugins-bad1.0-dev libgtk-3-dev libgirepository1.0-dev python3-gi libunwind-dev gettext
+      - name: Build
+        run: |
+          mkdir build
+          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
+          meson compile -C ./build
+          meson install -C ./build
+        env:
+          CC: gcc
 
       - name: install dependency
         if: runner.os == 'Linux'
@@ -40,23 +37,43 @@ jobs:
           pip install pycairo
           pip install PyGObject
       - name: Copy linux file
-        if: runner.os == 'Linux'
         run: |
-          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
-          mkdir $GITHUB_WORKSPACE/linux
-          tar xzf  aravis-*linux.tar.gz  -C $GITHUB_WORKSPACE/linux --strip-components 1
-          cp  $GITHUB_WORKSPACE/linux/lib/x86_64-linux-gnu/libaravis* aravis-python/aravis/lib/
-          cp -r $GITHUB_WORKSPACE/linux/lib/x86_64-linux-gnu/girepository-1.0/.  aravis-python/aravis/lib/
+#          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
+          cp  install/lib/x86_64-linux-gnu/libaravis* aravis-python/aravis/lib/
+          cp -r install/lib/x86_64-linux-gnu/girepository-1.0/.  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
-      
+
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Unbreak Python in Github Actions
+        run: |
+          find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
+          sudo rm -rf /Library/Frameworks/Python.framework/
+          brew install --force python3 && brew unlink python3 && brew unlink python3 && brew link --overwrite python3
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install meson ninja gcc gettext intltool libxml2 libusb gstreamer gnome-icon-theme gobject-introspection glib
+      - name: Build
+        run: |
+          mkdir build
+          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
+          meson compile -C ./build
+          meson install -C ./build
 
       - name: Copy macos file
-        if: runner.os == 'macOS'
         run: |
           export ARAVIS_VERSION=${{ github.event.release.tag_name }}
-          mkdir $GITHUB_WORKSPACE/macos
-          tar xzf  aravis-*macos.tar.gz  -C $GITHUB_WORKSPACE/macos --strip-components 1
-       
+          cp  install/lib/libaravis* aravis-python/aravis/lib/
+          cp -r install/lib/girepository-1.0/.  aravis-python/aravis/lib/
+          ls aravis-python/aravis/lib
+
 
 
 #      - name: Copy windows file
@@ -79,8 +96,6 @@ jobs:
         env:
           CIBW_ARCHS_MACOS: universal2
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
-          CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
           CIBW_SKIP: "*-win32 *i686 *musllinux*"
           CIBW_BUILD: cp311-*
           CIBW_ENVIRONMENT: ARAVIS_VERSION=${{ github.event.release.tag_name }}
@@ -88,4 +103,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: python/wheelhouse/*.whl
+          path: aravis-python/wheelhouse/*.whl
