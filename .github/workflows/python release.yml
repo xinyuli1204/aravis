@@ -38,7 +38,7 @@ jobs:
           pip install PyGObject
       - name: Copy linux file
         run: |
-#          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
+          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
           cp  install/lib/x86_64-linux-gnu/libaravis* aravis-python/aravis/lib/
           cp -r install/lib/x86_64-linux-gnu/girepository-1.0/.  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
