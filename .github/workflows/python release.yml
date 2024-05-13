@@ -42,24 +42,15 @@ jobs:
           cp  install/lib/x86_64-linux-gnu/libaravis* aravis-python/aravis/lib/
           cp -r install/lib/x86_64-linux-gnu/girepository-1.0/.  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
-
-      - name: Install cibuildwheel
-        run: python3 -m pip install cibuildwheel
-
+          
       - name: Build wheels
         run: |
-          cd aravis-python && python3 -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_ARCHS_MACOS: universal2
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-          CIBW_SKIP: "*-win32 *i686 *musllinux*"
-          CIBW_BUILD: cp311-*
-          CIBW_ENVIRONMENT: ARAVIS_VERSION=${{ github.event.release.tag_name }}
+          cd aravis-python && pip3 install build  && python3 -m build
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: aravis-python/wheelhouse/*.whl
+          name: linux-wheel
+          path: aravis-python/dist/*.whl
 
 
   macos:
@@ -106,23 +97,14 @@ jobs:
 #          cp  windows/bin/ion-bb.dll python/ionpy/module/windows/ion-bb.dll
 #          ls  python/ionpy/module/windows
 
-      - name: Install cibuildwheel
-        run: python3 -m pip install cibuildwheel
-
       - name: Build wheels
         run: |
-          cd aravis-python && python3 -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_ARCHS_MACOS: universal2
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-          CIBW_SKIP: "*-win32 *i686 *musllinux*"
-          CIBW_BUILD: cp311-*
-          CIBW_ENVIRONMENT: ARAVIS_VERSION=${{ github.event.release.tag_name }}
+          cd aravis-python && pip3 install build  && python3 -m build
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: aravis-python/wheelhouse/*.whl
+          name: macos-wheel
+          path: aravis-python/dist/*.whl
 
 
       
