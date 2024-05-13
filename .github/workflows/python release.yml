@@ -44,7 +44,6 @@ jobs:
           pip install PyGObject
       - name: Copy linux file
         run: |
-          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
           cp  install/lib/x86_64-linux-gnu/libaravis* aravis-python/aravis/lib/
           cp -r install/lib/x86_64-linux-gnu/girepository-1.0/.  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
@@ -58,7 +57,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
           CIBW_SKIP: "*-win32 *i686 *musllinux*"
           CIBW_BUILD: cp311-*
-          CIBW_ENVIRONMENT: ARAVIS_VERSION=${{ github.event.release.tag_name }}
+          CIBW_ENVIRONMENT: ARAVIS_VER=0.0.4
 
       - uses: actions/upload-artifact@v4
         with:
@@ -91,7 +90,6 @@ jobs:
           meson install -C ./build
       - name: Copy macos file
         run: |
-          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
           cp  install/lib/libaravis* aravis-python/aravis/lib/
           cp -r install/lib/girepository-1.0/.  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
@@ -123,7 +121,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           CIBW_SKIP: "*-win32 *i686 *musllinux*"
           CIBW_BUILD: cp311-*
-          CIBW_ENVIRONMENT: ARAVIS_VERSION=${{ github.event.release.tag_name }}
+          CIBW_ENVIRONMENT: ARAVIS_VER=0.0.4
 
       - uses: actions/upload-artifact@v4
         with:
