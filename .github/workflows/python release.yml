@@ -104,29 +104,20 @@ jobs:
 #          cp  windows/bin/ion-core.dll python/ionpy/module/windows/ion-core.dll
 #          cp  windows/bin/ion-bb.dll python/ionpy/module/windows/ion-bb.dll
 #          ls  python/ionpy/module/windows
-      - name: Uninstall brew Python
-        run:  brew uninstall --ignore-dependencies python
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
 
-      - name: Install cibuildwheel
-        run: python3 -m pip install cibuildwheel==2.16.4
+
+      - name: Install build
+        run: python3 -m pip install --break-system-packages build
 
       - name: Build wheels
         run: |
-          cd aravis-python && python3 -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_ARCHS_MACOS: universal2
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-          CIBW_SKIP: "*-win32 *i686 *musllinux*"
-          CIBW_BUILD: cp311-*
-          CIBW_ENVIRONMENT: ARAVIS_VER=0.0.4
-
+          python3 --version
+          cd aravis-python && python3 -m build
+       
       - uses: actions/upload-artifact@v4
         with:
           name: macos
-          path: aravis-python/wheelhouse/*.whl
+          path: aravis-python/dist/*.whl
 
 
   windows:
@@ -240,6 +231,3 @@ jobs:
         with:
           name: windows
           path: aravis-python/wheelhouse/*.whl
-
-
-
