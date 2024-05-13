@@ -47,7 +47,7 @@ jobs:
           mkdir $GITHUB_WORKSPACE/linux
           tar xzf  aravis-*linux.tar.gz  -C $GITHUB_WORKSPACE/linux --strip-components 1
           cp  $GITHUB_WORKSPACE/linux/lib/x86_64-linux-gnu/libaravis* aravis-python/aravis/lib/
-          cp  $GITHUB_WORKSPACE/linux/lib/x86_64-linux-gnu/girepository-1.0/*  aravis-python/aravis/lib/
+          cp -r $GITHUB_WORKSPACE/linux/lib/x86_64-linux-gnu/girepository-1.0/.  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
 
 #      - name: Copy linux file
