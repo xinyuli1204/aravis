@@ -113,6 +113,8 @@ ARV_API gboolean 	arv_device_is_feature_implemented	(ArvDevice *device, const ch
 ARV_API ArvGcNode *	arv_device_get_feature			(ArvDevice *device, const char *feature);
 ARV_API ArvGcAccessMode	arv_device_get_feature_access_mode	(ArvDevice *device, const char *feature);
 
+ARV_API ArvGcRepresentation	arv_device_get_feature_representation	(ArvDevice *device, const char *feature);
+
 ARV_API ArvChunkParser *arv_device_create_chunk_parser		(ArvDevice *device);
 
 ARV_API void		arv_device_execute_command		(ArvDevice *device, const char *feature, GError **error);
@@ -133,6 +135,10 @@ ARV_API void		arv_device_set_float_feature_value	(ArvDevice *device, const char 
 ARV_API double		arv_device_get_float_feature_value	(ArvDevice *device, const char *feature, GError **error);
 ARV_API void		arv_device_get_float_feature_bounds	(ArvDevice *device, const char *feature, double *min, double *max, GError **error);
 ARV_API double		arv_device_get_float_feature_increment	(ArvDevice *device, const char *feature, GError **error);
+  
+ARV_API void		arv_device_set_register_feature_value   (ArvDevice *device, const char *feature, guint64 length, void* value, GError **error);
+ARV_API void		arv_device_get_register_feature_value   (ArvDevice *device, const char *feature, guint64 length, void* value, GError **error);
+ARV_API guint64		arv_device_get_register_feature_length  (ArvDevice *device, const char *feature, GError **error);
 
 ARV_API gint64 *	arv_device_dup_available_enumeration_feature_values			(ArvDevice *device, const char *feature,
 												 guint *n_values, GError **error);

@@ -40,6 +40,7 @@
 #include <arvgcfloat.h>
 #include <arvgcenumeration.h>
 #include <arvgcenumentry.h>
+#include <arvgcregister.h>
 #include <arvgcstring.h>
 #include <arvbuffer.h>
 #include <arvgc.h>
@@ -2428,6 +2429,62 @@ arv_camera_is_binning_available (ArvCamera *camera, GError **error)
 }
 
 /**
+ * arv_camera_get_gain_representation:
+ * @camera: a #ArvCamera
+ *
+ * Return: gain representation, %ARV_GC_REPRESENTATION_UNDEFINED if not available.
+ *
+ * Since: 0.8.31
+ */
+
+ArvGcRepresentation
+arv_camera_get_gain_representation (ArvCamera *camera)
+{
+	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
+
+	g_return_val_if_fail (ARV_IS_CAMERA (camera), ARV_GC_REPRESENTATION_UNDEFINED);
+
+	if (priv->has_gain)
+		return arv_device_get_feature_representation (priv->device, "Gain");
+
+	if (priv->gain_raw_as_float)
+		return arv_device_get_feature_representation (priv->device, "GainRaw");
+	if (priv->gain_abs_as_float)
+		return arv_device_get_feature_representation (priv->device, "GainAbs");
+
+	return arv_device_get_feature_representation (priv->device, "GainRaw");
+}
+
+/**
+ * arv_camera_get_exposure_time_representation:
+ * @camera: a #ArvCamera
+ *
+ * Return: exposure time representation, %ARV_GC_REPRESENTATION_UNDEFINED if not available.
+ *
+ * Since: 0.8.31
+ */
+
+ArvGcRepresentation
+arv_camera_get_exposure_time_representation (ArvCamera *camera)
+{
+	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
+
+	g_return_val_if_fail (ARV_IS_CAMERA (camera), ARV_GC_REPRESENTATION_UNDEFINED);
+
+	switch (priv->series) {
+		case ARV_CAMERA_SERIES_XIMEA:
+			return arv_device_get_feature_representation (priv->device, "ExposureTime");
+		case ARV_CAMERA_SERIES_RICOH:
+			return arv_device_get_feature_representation (priv->device, "ExposureTimeRaw");
+		case ARV_CAMERA_SERIES_IMPERX_CHEETAH:
+			return arv_device_get_feature_representation (priv->device, "ExposureMode");
+		default:
+			return arv_device_get_feature_representation (priv->device,
+								priv->has_exposure_time ?  "ExposureTime" : "ExposureTimeAbs");
+	}
+}
+
+/**
  * arv_camera_execute_command:
  * @camera: a #ArvCamera
  * @feature: feature name
@@ -2817,6 +2874,69 @@ arv_camera_get_float_increment (ArvCamera *camera, const char *feature, GError *
 }
 
 /**
+ * arv_camera_set_register:
+ * @camera: a #ArvCamera
+ * @feature: feature name
+ * @value: new feature value
+ * @error: a #GError placeholder, %NULL to ignore
+ *
+ * Set a register feature value.
+ *
+ * Since: 
+ */
+
+void
+arv_camera_set_register (ArvCamera *camera, const char *feature, guint64 length, void* value, GError **error)
+{
+	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
+
+	g_return_if_fail (ARV_IS_CAMERA (camera));
+
+	arv_device_set_register_feature_value (priv->device, feature, length, value, error);
+}
+
+/**
+ * arv_camera_get_register:
+ * @camera: a #ArvCamera
+ * @feature: feature name
+ * @value: (out): the register feature value
+ * @error: a #GError placeholder, %NULL to ignore
+ *
+ * Since: 
+ */
+
+void
+arv_camera_get_register (ArvCamera *camera, const char *feature,guint64 length, void* value, GError **error)
+{
+	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
+
+	g_return_if_fail (ARV_IS_CAMERA (camera));
+
+	arv_device_get_register_feature_value (priv->device, feature, length, value, error);
+}
+
+/**
+ * arv_camera_get_register_length:
+ * @camera: a #ArvCamera
+ * @feature: feature name
+ * @error: a #GError placeholder
+ *
+ * Returns: the length of register value, 0 if not available
+ *
+ * Since:
+ */
+
+guint64
+arv_camera_get_register_length (ArvCamera *camera, const char *feature, GError **error)
+{
+	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
+
+	g_return_val_if_fail (ARV_IS_CAMERA (camera), 0);
+
+	return arv_device_get_register_feature_length (priv->device, feature, error);
+}
+
+/**
  * arv_camera_dup_available_enumerations:
  * @camera: a #ArvCamera
  * @feature: feature name
@@ -2962,6 +3082,26 @@ arv_camera_is_feature_implemented (ArvCamera *camera, const char *feature, GErro
 	g_return_val_if_fail (ARV_IS_CAMERA (camera), FALSE);
 
 	return arv_device_is_feature_implemented (priv->device, feature, error);
+}
+
+/**
+ * arv_camera_get_feature_representation:
+ * @camera: a #ArvCamera
+ * @feature: feature name
+ *
+ * Return: the feature representation, %ARV_GC_REPRESENTATION_UNDEFINED if not available.
+ *
+ * Since: 0.8.31
+ */
+
+ArvGcRepresentation
+arv_camera_get_feature_representation (ArvCamera *camera, const char *feature)
+{
+	ArvCameraPrivate *priv = arv_camera_get_instance_private (camera);
+
+	g_return_val_if_fail (ARV_IS_CAMERA (camera), ARV_GC_REPRESENTATION_UNDEFINED);
+
+	return arv_device_get_feature_representation (priv->device, feature);
 }
 
 /**
