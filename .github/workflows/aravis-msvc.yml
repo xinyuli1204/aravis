@@ -166,7 +166,7 @@ jobs:
       - name: Zip directory
         shell: powershell
         run: |
-          $env:tag=${{env.ARAVIS_VER}}
+          $env:tag="${{env.ARAVIS_VER}}"
           $env:tag=$env:tag.TrimStart("v")
           Compress-Archive -Path ${{ github.workspace }}\install\* -Destination "aravis-${env:tag}-x86-64-windows.zip"
 
