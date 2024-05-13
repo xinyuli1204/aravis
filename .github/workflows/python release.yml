@@ -63,48 +63,48 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: linux
+          name: wheel-linux
           path: aravis-python/wheelhouse/*.whl
 
 
-  macos:
-    name: Build wheel on macos
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Unbreak Python in Github Actions
-        run: |
-          find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
-          sudo rm -rf /Library/Frameworks/Python.framework/
-          brew install --force python3 && brew unlink python3 && brew link --overwrite python3
-      - name: Install dependencies
-        run: |
-          brew update
-          brew install meson ninja gcc gettext intltool libxml2 libusb gstreamer gnome-icon-theme gobject-introspection glib
-      - name: Build
-        run: |
-          mkdir build
-          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
-          meson compile -C ./build
-          meson install -C ./build
-      - name: Copy macos file
-        run: |
-          cp  install/lib/libaravis* aravis-python/aravis/lib/
-          cp -r install/lib/girepository-1.0/.  aravis-python/aravis/lib/
-          ls aravis-python/aravis/lib
+  # macos:
+  #   name: Build wheel on macos
+  #   runs-on: macos-latest-xlarge
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Unbreak Python in Github Actions
+  #       run: |
+  #         find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
+  #         sudo rm -rf /Library/Frameworks/Python.framework/
+  #         brew install --force python3 && brew unlink python3 && brew link --overwrite python3
+  #     - name: Install dependencies
+  #       run: |
+  #         brew update
+  #         brew install meson ninja gcc gettext intltool libxml2 libusb gstreamer gnome-icon-theme gobject-introspection glib
+  #     - name: Build
+  #       run: |
+  #         mkdir build
+  #         meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
+  #         meson compile -C ./build
+  #         meson install -C ./build
+  #     - name: Copy macos file
+  #       run: |
+  #         cp  install/lib/libaravis* aravis-python/aravis/lib/
+  #         cp -r install/lib/girepository-1.0/.  aravis-python/aravis/lib/
+  #         ls aravis-python/aravis/lib
 
-      - name: Install build
-        run: python3 -m pip install --break-system-packages build
+  #     - name: Install build
+  #       run: python3 -m pip install --break-system-packages build
 
-      - name: Build wheels
-        run: |
-          python3 --version
-          cd aravis-python && python3 -m build
+  #     - name: Build wheels
+  #       run: |
+  #         python3 --version
+  #         cd aravis-python && python3 -m build
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos
-          path: aravis-python/dist/*.whl
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheel-macos
+  #         path: aravis-python/dist/*.whl
 
 
   windows:
@@ -221,5 +221,72 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: windows
+          name: wheel-windows
           path: aravis-python/wheelhouse/*.whl
+
+
+  upload_TEST_PYPI:
+    needs: [linux, windows]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+
+  # or, alternatively, upload to PyPI on every tag starting with 'v' (remove on: release above to use this)
+  # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        # unpacks all CIBW artifacts into dist/
+        pattern: wheel*
+        path: dist
+        merge-multiple: true
+
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository-url: https://test.pypi.org/legacy/
+
+  test_TEST_PYPI:
+    needs: [upload_TEST_PYPI]
+    name: Test wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+         os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
+      - name: test
+        run: |
+          sudo apt-get update && sudo apt install libgirepository1.0-dev gcc libcairo2-dev pkg-config
+          pip install pycairo
+          pip install PyGObject
+          sleep 60 # wait package to upload
+          pip install -i https://test.pypi.org/simple/ aravis-python
+    
+
+  upload_PYPI:
+    needs: [ test_TEST_PYPI ]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+
+  # or, alternatively, upload to PyPI on every tag starting with 'v' (remove on: release above to use this)
+  # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          # unpacks all CIBW artifacts into dist/
+          pattern: wheel*
+          path: dist
+          merge-multiple: true
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+  
