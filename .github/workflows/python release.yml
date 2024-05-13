@@ -95,7 +95,7 @@ jobs:
           cp  install/lib/libaravis* aravis-python/aravis/lib/
           cp -r install/lib/girepository-1.0/.  aravis-python/aravis/lib/
           ls aravis-python/aravis/lib
-          brew unlink python3
+
 #      - name: Copy windows file
 #        if: runner.os == 'Windows'
 #        run: |
@@ -106,13 +106,14 @@ jobs:
 #          cp  windows/bin/ion-core.dll python/ionpy/module/windows/ion-core.dll
 #          cp  windows/bin/ion-bb.dll python/ionpy/module/windows/ion-bb.dll
 #          ls  python/ionpy/module/windows
-
+      - name: Uninstall brew Python
+        run:  brew uninstall --ignore-dependencies python && brew unlink python3
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
       - name: Install cibuildwheel
-        run: pip3 install --break-system-packages cibuildwheel==2.16.4
+        run: pip3 install cibuildwheel==2.16.4
 
       - name: Build wheels
         run: |
