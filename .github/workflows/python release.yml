@@ -24,7 +24,6 @@ jobs:
 
       - uses: robinraju/release-downloader@v1.9
         with:
-          repository: "Sensing-Dev/cdci-test/"
           latest: true
           fileName: "aravis*"
 
