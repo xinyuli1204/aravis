@@ -4,7 +4,8 @@ on:
   push
 
 env:
-  ARAVIS_VER: ${{ github.event.release.tag_name }}
+  ARAVIS_VER: 2.0.0
+  # ARAVIS_VER: ${{ github.event.release.tag_name }}
   PKG_CONFIG_INSTALL: C:\pkg-config
   PKG_CONFIG_VERSION: 0.28-1
   NINJA_INSTALL: C:\ninja
@@ -57,7 +58,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
           CIBW_SKIP: "*-win32 *i686 *musllinux*"
           CIBW_BUILD: cp311-*
-          CIBW_ENVIRONMENT: ARAVIS_VER=0.0.4
+          CIBW_ENVIRONMENT: ARAVIS_VER=${{ github.event.release.tag_name }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -97,7 +98,6 @@ jobs:
       - name: Build wheels
         run: |
           python3 --version
-          export ARAVIS_VER=1.0.0
           cd aravis-python && python3 -m build
 
       - uses: actions/upload-artifact@v4
@@ -197,10 +197,7 @@ jobs:
         run: |
           cp  install/bin/*.dll  aravis-python/aravis/bin/
           cp  install/lib/girepository-1.0/* aravis-python/aravis/lib/
-          ls  aravis-python/aravis/bin/
-          ls  aravis-python/aravis/lib/
-          cp  ${{ github.workspace }}/vcpkg_installed/x64-windows/bin aravis-python/aravis/bin/
-          ls  aravis-python/aravis/bin/
+          cp  ${{ github.workspace }}/vcpkg_installed/x64-windows/bin/*.dll aravis-python/aravis/bin/
           cp  ${{ github.workspace }}/vcpkg_installed/x64-windows/lib/girepository-1.0/* aravis-python/aravis/lib/
           ls  aravis-python/aravis/bin/
           ls  aravis-python/aravis/lib/
@@ -219,7 +216,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
           CIBW_SKIP: "*-win32 *i686 *musllinux*"
           CIBW_BUILD: cp311-*
-          CIBW_ENVIRONMENT: ARAVIS_VER=0.0.4
+          CIBW_ENVIRONMENT: ARAVIS_VER=${{ github.event.release.tag_name }}
 
       - uses: actions/upload-artifact@v4
         with:
