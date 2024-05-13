@@ -1,8 +1,10 @@
 name: Release
 
 on:
-  push
-
+  push:
+    # Pattern matched against refs/tags
+    tags:        
+      - 'v*'
 env:
   ARAVIS_VER: ${{github.ref_name}}
   PKG_CONFIG_INSTALL: C:\pkg-config
@@ -25,7 +27,7 @@ jobs:
         meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
         meson compile -C ./build
         meson install -C ./build
-        cd install && tar -zcvf ../aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz .
+        cd install && tar -zcvf ../aravis-${${${{env.ARAVIS_VER}}}#v}-x86-64-linux.tar.gz .
       env:
         CC: gcc
     - name: Tests
@@ -37,7 +39,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-            aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
+            aravis*-x86-64-linux.tar.gz
 
   release-macos:
     runs-on: macos-latest
@@ -61,7 +63,7 @@ jobs:
           meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
           meson compile -C ./build
           meson install -C ./build
-          cd install && tar -zcvf ../aravis-${{env.ARAVIS_VER}}-arm-64-macos.tar.gz .
+          cd install && tar -zcvf ../aravis-${${${{env.ARAVIS_VER}}}#v}-arm-64-macos.tar.gz .
         env:
           CC: gcc
       - name: Tests
@@ -73,7 +75,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-              aravis-${{env.ARAVIS_VER}}-arm-64-macos.tar.gz
+              aravis*-arm-64-macos.tar.gz
 
   release-windows:
     runs-on: windows-latest
@@ -162,7 +164,9 @@ jobs:
       - name: Zip directory
         shell: powershell
         run: |
-          Compress-Archive -Path ${{ github.workspace }}\install\* -Destination aravis-${{ github.ref_name }}-x86-64-windows.zip
+          $VERSION=${{env.ARAVIS_VER}}
+          $VERSION=$VERSION.TrimStart("v")
+          Compress-Archive -Path ${{ github.workspace }}\install\* -Destination "aravis-$VERSION-x86-64-windows.zip"
 
       - name: Release
         uses: softprops/action-gh-release@v1
