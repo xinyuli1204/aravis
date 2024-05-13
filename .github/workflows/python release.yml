@@ -107,7 +107,7 @@ jobs:
 #          cp  windows/bin/ion-bb.dll python/ionpy/module/windows/ion-bb.dll
 #          ls  python/ionpy/module/windows
       - name: Uninstall brew Python
-        run:  brew uninstall --ignore-dependencies python && brew unlink python3
+        run:  brew uninstall --ignore-dependencies python
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
