@@ -1,0 +1,95 @@
+name: Upload Python Package
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+         os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+
+      # - name: GitHub Tag Name
+      #   run: |
+      #    echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
+      #    echo "Tag name from github.ref_name: ${{  github.ref_name }}"
+      #    echo ${{ github.event.release.tag_name }}
+
+      - uses: robinraju/release-downloader@v1.9
+        with:
+          repository: "Sensing-Dev/cdci-test/"
+          latest: true
+          fileName: "aravis*"
+
+
+      # Used to host cibuildwheel
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
+
+
+      - name: install dependency
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install libgirepository1.0-dev gcc libcairo2-dev pkg-config
+          pip install pycairo
+          pip install PyGObject
+
+      - name: Copy linux file
+        if: runner.os == 'Linux'
+        run: |
+          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
+          mkdir $GITHUB_WORKSPACE/linux
+          tar xzf  aravis-*linux.tar.gz  -C $GITHUB_WORKSPACE/linux --strip-components 1
+          cp  $GITHUB_WORKSPACE/linux/lib/x86_64-linux-gnu/libaravis* aravis-python/aravis/lib/
+          cp  $GITHUB_WORKSPACE/linux/x86_64-linux-gnu/girepository-1.0/*  aravis-python/aravis/lib/
+          ls aravis-python/aravis/lib
+
+#      - name: Copy linux file
+#        if: runner.os == 'Linux'
+#        run: |
+#          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
+#          mkdir $GITHUB_WORKSPACE/linux
+#          tar xzf  ion-kit-*linux.tar.gz  -C $GITHUB_WORKSPACE/linux --strip-components 1
+#          cp  $GITHUB_WORKSPACE/linux/lib/libion-bb.so python/ionpy/module/linux/libion-bb.so
+#          cp  $GITHUB_WORKSPACE/linux/lib/libion-core.so python/ionpy/module/linux/libion-core.so
+#          cp  $GITHUB_WORKSPACE/linux/lib/libHalide.so.16.0.0 python/ionpy/module/linux/libHalide.so.16
+#          ls python/ionpy/module/linux
+
+#      - name: Copy windows file
+#        if: runner.os == 'Windows'
+#        run: |
+#          mkdir windows
+#          set ARAVIS_VERSION=${{ github.event.release.tag_name }}
+#          unzip  ion-kit-*windows.zip  && mv ion-kit*/*  windows
+#          cp  windows/bin/Halide.dll python/ionpy/module/windows/Halide.dll
+#          cp  windows/bin/ion-core.dll python/ionpy/module/windows/ion-core.dll
+#          cp  windows/bin/ion-bb.dll python/ionpy/module/windows/ion-bb.dll
+#          ls  python/ionpy/module/windows
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.16.4
+
+      - name: Build wheels
+        run: |
+          cd aravis-python && python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_ARCHS_MACOS: universal2
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
+          CIBW_SKIP: "*-win32 *i686 *musllinux*"
+          CIBW_BUILD: cp311-*
+          CIBW_ENVIRONMENT: ARAVIS_VERSION=${{ github.event.release.tag_name }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: python/wheelhouse/*.whl
