@@ -1,17 +1,84 @@
-name: Aravis
+name: Release
 
 on:
-  push
+  push:
+    tags:
+      - "*"
 
 env:
-  ARAVIS_VER: fe6e314
+  ARAVIS_VER: ${{github.ref_name}}
   PKG_CONFIG_INSTALL: C:\pkg-config
   PKG_CONFIG_VERSION: 0.28-1
   NINJA_INSTALL: C:\ninja
 
 jobs:
-  VS2022-Build:
-    runs-on: windows-2022
+  release-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        pip3 install meson ninja Markdown toml typogrify
+        sudo apt update
+        sudo apt install python3 libusb-1.0-0-dev gobject-introspection valgrind libgstreamer-plugins-bad1.0-dev libgtk-3-dev libgirepository1.0-dev python3-gi libunwind-dev gettext
+    - name: Build
+      run: |
+        mkdir build
+        meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
+        meson compile -C ./build
+        meson install -C ./build
+        cd install && tar -zcvf ../aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz .
+      env:
+        CC: gcc
+    - name: Tests
+      run: meson test -C build/ -v
+    - name: Valgrind
+      run: meson test -C build/ -v --setup=valgrind
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+            aravis-${{env.ARAVIS_VER}}-x86-64-linux.tar.gz
+
+  release-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Unbreak Python in Github Actions
+        run: |
+          find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
+          sudo rm -rf /Library/Frameworks/Python.framework/
+          brew install --force python3 && brew unlink python3 && brew unlink python3 && brew link --overwrite python3
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install meson ninja gcc gettext intltool libxml2 libusb gstreamer gnome-icon-theme gobject-introspection glib
+      - name: Build
+        run: |
+          mkdir build
+          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=disabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
+          meson compile -C ./build
+          meson install -C ./build
+          cd install && tar -zcvf ../aravis-${{env.ARAVIS_VER}}-arm-64-macos.tar.gz .
+        env:
+          CC: gcc
+      - name: Tests
+        run: |
+          export DYLD_LIBRARY_PATH=${{ github.workspace }}/install/lib/:$DYLD_LIBRARY_PATH
+          meson test -C build/ -v
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+              aravis-${{env.ARAVIS_VER}}-arm-64-macos.tar.gz
+
+  release-windows:
+    runs-on: windows-latest
     steps:
       - name: Disable perl
         run: |
@@ -29,7 +96,7 @@ jobs:
 
       - name: Setup pkg-config-lite
         run: winget install bloodrock.pkg-config-lite --accept-source-agreements --accept-package-agreements --location ${{env.PKG_CONFIG_INSTALL}} --version ${{env.PKG_CONFIG_VERSION}}
-      
+
       - name: Confirm pkg-config
         id: pkg-config-existence
         uses: andstor/file-existence-action@v3
@@ -88,28 +155,16 @@ jobs:
           set PATH=${{ github.workspace }}\vcpkg_installed\x64-windows\tools\gobject-introspection;%PATH%
           set PATH=${{env.NINJA_INSTALL}};%PATH%
           set PKG_CONFIG_PATH=${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig\;%PKG_CONFIG_PATH%
-          meson setup --pkg-config-path ${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig -Ddocumentation=disabled -Dusb=enabled -Dviewer=disabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}\install -Dintrospection=enabled build .
+          meson setup --pkg-config-path ${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig -Ddocumentation=disabled -Dusb=enabled -Dviewer=disabled -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}\install -Dintrospection=disabled build .
           meson compile -C ./build
           meson install -C ./build
 
-
-      - name: zip directory
+      - name: Zip directory
         shell: powershell
         run: |
-          Compress-Archive -Path ${{ github.workspace }}\install\* -Destination Aravis-${{ github.ref_name }}.zip
+          Compress-Archive -Path ${{ github.workspace }}\install\* -Destination aravis-${{ github.ref_name }}-x86-64-windows.zip
 
-            
-      - name: Upload 
-        uses: actions/upload-artifact@v4
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: aravis-pkg
-
-          # A file, directory or wildcard pattern that describes what to upload
-          # Required.
-          path: Aravis-${{ github.ref_name }}.zip
-      
-      # - name: Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: Aravis-*.zip
-
+          files: aravis*.zip
