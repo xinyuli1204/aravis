@@ -267,6 +267,7 @@ jobs:
           pip install PyGObject
           sleep 60 # wait package to upload
           pip install -i https://test.pypi.org/simple/ aravis-python
+          python3 -c "import aravis"
     
 
   upload_PYPI:
