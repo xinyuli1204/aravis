@@ -1,10 +1,8 @@
 name: Release
 
 on:
-  push:
-    # Pattern matched against refs/tags
-    tags:        
-      - 'v*'
+  push
+  
 env:
   ARAVIS_VER: ${{github.ref_name}}
   PKG_CONFIG_INSTALL: C:\pkg-config
@@ -43,7 +41,7 @@ jobs:
             aravis*-x86-64-linux.tar.gz
 
   release-macos:
-    runs-on: macos-latest
+    runs-on: macos-13-arm64
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
