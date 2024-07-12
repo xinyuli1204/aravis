@@ -55,37 +55,9 @@ jobs:
         
       - name: Test wheel
         run: |
+          pip3 install pycairo
           pip install aravis-python/wheelhouse/*.whl
           python3 -c "import aravis"
 
-  macos:
-    name: Build wheel on macos
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: |
-          brew update
-          brew install meson ninja gcc gettext intltool libxml2 libusb gstreamer gnome-icon-theme gobject-introspection glib
-      - name: Build
-        run: |
-          mkdir build
-          meson setup -Ddocumentation=disabled -Dgst-plugin=enabled -Dusb=enabled -Dviewer=enabled -Dintrospection=enabled  -Dgv-n-buffers=1 -Dprefix=${{ github.workspace }}/install build . 
-          meson compile -C ./build
-          meson install -C ./build
-      - name: Copy macos file
-        run: |
-          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
-          cp  install/lib/libaravis* aravis-python/aravis/lib/
-          cp -r install/lib/girepository-1.0/.  aravis-python/aravis/lib/
-      - name: Install cibuildwheel
-        run: pip3 install cibuildwheel==2.16.4
 
-      - name: Test wheel
-        run: |
-          pip install aravis-python/wheelhouse/*.whl
-          python3 -c "import aravis"
  
