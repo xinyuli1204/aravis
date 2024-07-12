@@ -32,7 +32,7 @@ jobs:
       - name: Install cibuildwheel
         run: pip3 install cibuildwheel==2.16.4
 
-      - name: Build wheels
+      - name: Build wheel
         run: |
           cd aravis-python && python3 -m cibuildwheel --output-dir wheelhouse
         env:
@@ -41,3 +41,9 @@ jobs:
           CIBW_SKIP: "*-win32 *i686 *musllinux*"
           CIBW_BUILD: cp311-*
           CIBW_ENVIRONMENT: ARAVIS_VER=0.1.1
+
+
+      - name: Test wheel
+        run: |
+          pip install aravis-python/wheelhouse/*.whl
+          python3 -c "import aravis"
