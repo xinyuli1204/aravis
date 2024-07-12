@@ -2,7 +2,7 @@ name: Aravis-macOS
 
 on:
   push
-
+    
 jobs:
  
   macos:
@@ -25,7 +25,7 @@ jobs:
           meson install -C ./build
       - name: Copy macos file
         run: |
-          export ARAVIS_VERSION=0.8.1
+          export ARAVIS_VERSION=${{ github.event.release.tag_name }}
           cp  install/lib/libaravis* aravis-python/aravis/lib/
           cp -r install/lib/girepository-1.0/.  aravis-python/aravis/lib/
 
@@ -40,4 +40,4 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           CIBW_SKIP: "*-win32 *i686 *musllinux*"
           CIBW_BUILD: cp39-*
-          CIBW_ENVIRONMENT: ARAVIS_VERSION=0.8.1
+          CIBW_ENVIRONMENT: ARAVIS_VER=${{ github.event.release.tag_name }}
