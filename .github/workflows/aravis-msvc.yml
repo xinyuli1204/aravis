@@ -97,5 +97,6 @@ jobs:
       
       - name: Test wheel
         run: |
+          pip3 install PyGObject
           pip install aravis-python/wheelhouse/*.whl
           python3 -c "import aravis"
