@@ -2,7 +2,12 @@ name: Aravis-macOS
 
 on:
   push
-    
+env:
+
+  ARAVIS_VER: ${{ github.event.release.tag_name }}
+  PKG_CONFIG_INSTALL: C:\pkg-config
+  PKG_CONFIG_VERSION: 0.28-1
+  NINJA_INSTALL: C:\ninja    
 jobs:
   windows:
     name: Build wheel on windows
