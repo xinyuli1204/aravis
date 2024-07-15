@@ -129,6 +129,7 @@ jobs:
           dir
           dir ${{ github.workspace }}
           dir aravis-python\wheelhouse\
+          FOR %i in (${{ github.workspace }}\aravis-python\wheelhouse\*.whl) DO python -m pip install %i 
           pip install "${{ github.workspace }}\aravis-python\wheelhouse\*.whl"
           python -c "import aravis"
           
