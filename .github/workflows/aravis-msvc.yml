@@ -128,7 +128,7 @@ jobs:
           dir
           dir ${{ github.workspace }}
           dir aravis-python//wheelhouse/
-          pip install ${{ github.workspace }}/wheelhouse/*.whl
+          pip install ${{ github.workspace }}\aravis-python\wheelhouse\*.whl
           python -c "import aravis"
           
           
