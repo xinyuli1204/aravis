@@ -5,7 +5,7 @@ on:
 env:
 
   # ARAVIS_VER: ${{ github.event.release.tag_name }}
-  ARAVIS_VER: 0.1.0
+  ARAVIS_VER: v0.1.0
   PKG_CONFIG_INSTALL: C:\pkg-config
   PKG_CONFIG_VERSION: 0.28-1
   NINJA_INSTALL: C:\ninja    
@@ -117,7 +117,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
           CIBW_SKIP: "*-win32 *i686 *musllinux*"
           CIBW_BUILD: cp311-*
-          CIBW_ENVIRONMENT: ARAVIS_VER=0.1.0
+          CIBW_ENVIRONMENT: ARAVIS_VER=v0.1.0
 
       - name: Test wheel
         shell: cmd
@@ -129,7 +129,7 @@ jobs:
           dir
           dir ${{ github.workspace }}
           dir aravis-python\wheelhouse\
-          pip install ${{ github.workspace }}\aravis-python\wheelhouse\aravis_python-${{env.ARAVIS_VER}}-py3-none-win_amd64.whl
+          pip install "${{ github.workspace }}\aravis-python\wheelhouse\*.whl"
           python -c "import aravis"
           
           
