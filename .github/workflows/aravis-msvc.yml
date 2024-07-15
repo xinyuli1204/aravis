@@ -117,7 +117,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
           CIBW_SKIP: "*-win32 *i686 *musllinux*"
           CIBW_BUILD: cp311-*
-          CIBW_ENVIRONMENT: ARAVIS_VER={{env.ARAVIS_VER}}
+          CIBW_ENVIRONMENT: ARAVIS_VER=0.1.0
 
       - name: Test wheel
         shell: cmd
