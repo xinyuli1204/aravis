@@ -127,7 +127,9 @@ jobs:
           set PKG_CONFIG_PATH=${{ github.workspace }}\vcpkg_installed\x64-windows\lib\pkgconfig\;%PKG_CONFIG_PATH%
           pip install PyGObject
           dir
-          pip install ./wheelhouse/*.whl
+          dir ${{ github.workspace }}
+          dir aravis-python//wheelhouse/
+          pip install ${{ github.workspace }}/wheelhouse/*.whl
           python -c "import aravis"
           
           
