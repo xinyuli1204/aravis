@@ -245,6 +245,11 @@ jobs:
         with:
           name: wheel-windows
           path: aravis-python/wheelhouse/*.whl
+     
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vcpkg-dependency
+          path: ${{ github.workspace }}\vcpkg_installed\*
 
 
   # upload_TEST_PYPI:
