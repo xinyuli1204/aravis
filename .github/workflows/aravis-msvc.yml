@@ -28,7 +28,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup pkg-config-lite
-        run: winget install bloodrock.pkg-config-lite --accept-source-agreements --accept-package-agreements --location ${{env.PKG_CONFIG_INSTALL}} --version ${{env.PKG_CONFIG_VERSION}}
+        run: |
+          sudo apt-get update && sudo apt-get install -y  valgrind
+          winget install bloodrock.pkg-config-lite --accept-source-agreements --accept-package-agreements --location ${{env.PKG_CONFIG_INSTALL}} --version ${{env.PKG_CONFIG_VERSION}}
 
       - name: Confirm pkg-config
         id: pkg-config-existence
