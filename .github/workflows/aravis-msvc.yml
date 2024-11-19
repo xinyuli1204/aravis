@@ -1,87 +1,18 @@
-name: Aravis-windows
+name: PowerShell Version Check
 
-on:
-  push
-env:
+on: 
+  push:
+    branches:
+      - main
 
-  # ARAVIS_VER: ${{ github.event.release.tag_name }}
-  ARAVIS_VER: v0.1.0
-  PKG_CONFIG_INSTALL: C:\pkg-config
-  PKG_CONFIG_VERSION: 0.28-1
-  NINJA_INSTALL: C:\ninja    
 jobs:
-  windows:
-    name: Build wheel on windows
+  check-powershell-version:
     runs-on: windows-latest
     steps:
-      - name: Disable perl
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check PowerShell version
+        shell: pwsh
         run: |
-          rm -r C:\Strawberry\perl
-      - name: Setup Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
-      - name: Setup winget for pkg-config-lite
-        uses: Cyberboss/install-winget@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup pkg-config-lite
-        run: |
-          sudo apt-get update && sudo apt-get install -y  valgrind
-          winget install bloodrock.pkg-config-lite --accept-source-agreements --accept-package-agreements --location ${{env.PKG_CONFIG_INSTALL}} --version ${{env.PKG_CONFIG_VERSION}}
-
-      - name: Confirm pkg-config
-        id: pkg-config-existence
-        uses: andstor/file-existence-action@v3
-        with:
-          files: ${{env.PKG_CONFIG_INSTALL}}\pkg-config-lite-${{env.PKG_CONFIG_VERSION}}\bin\pkg-config.exe
-          fail: true
-
-      - name: Setup Meson
-        run: |
-          pip install meson
-      - name: Setup Ninja
-        uses: ahmedyarub/setup-ninja@master
-        with:
-          version: 1.11.1
-          dest: ${{env.NINJA_INSTALL}}
-
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Set up MSVC command env
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Checkout Aravis
-        uses: actions/checkout@v2
-
-      - name: Check for existing cache
-        id: cache_status
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}\vcpkg_installed
-          key: ${{ runner.os }}-vcpkg-cache
-      # - name: Install vcpkg
-      #   if: steps.cache_status.outputs.cache-hit != 'true'
-      #   shell: cmd
-      #   run: |
-      #     git clone https://github.com/microsoft/vcpkg.git
-      #     cd vcpkg && .\bootstrap-vcpkg.bat  && cd ../
-      - name: Install dependencies
-        if: steps.cache_status.outputs.cache-hit != 'true'
-        shell: cmd
-        run: |
-          vcpkg install --x-install-root ${{ github.workspace }}\vcpkg_installed
-      - name: Cache dependencies
-        if: steps.cache_status.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ github.workspace }}\vcpkg_installed
-          key: ${{ runner.os }}-vcpkg-cache
-     
-      - uses: actions/upload-artifact@v4
-        with:
-          name: vcpkg-dependency
-          path: ${{ github.workspace }}\vcpkg_installed\*
+          echo "PowerShell version is: $($PSVersionTable.PSVersion)"
