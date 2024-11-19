@@ -15,4 +15,4 @@ jobs:
       - name: Check PowerShell version
         shell: pwsh
         run: |
-          echo "PowerShell version is: $($PSVersionTable.PSVersion)"
+          $PSVersionTable
