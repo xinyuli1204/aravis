@@ -18,7 +18,7 @@ jobs:
           cd vcpkg
           git checkout 2024.09.30
           sudo bash bootstrap-vcpkg.bat  && cd ../
-          
+          ${{ github.workspace }}\vcpkg\vcpkg.exe install libjpeg-turbo
           
           
           
