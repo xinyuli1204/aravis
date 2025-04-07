@@ -17,6 +17,8 @@ jobs:
           git clone https://github.com/microsoft/vcpkg.git
           cd vcpkg
           git checkout 2024.09.30
-          .\bootstrap-vcpkg.bat  && cd ../
+          sudo bash bootstrap-vcpkg.bat  && cd ../
+          
+          
           
           
